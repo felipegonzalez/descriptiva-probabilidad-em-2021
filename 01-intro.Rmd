@@ -5,6 +5,7 @@
 library(tidyverse)
 library(ggrepel)
 library(ggthemes)
+library(broom)
 source("R/funciones_auxiliares_notas.R")
 ```
 
@@ -148,17 +149,15 @@ datos oficiales agregados por estado de Estados Unidos. Tenemos las variables
 por estudiante en (1994 - 1995), además de algunas otras variables. 
 
 
-```{r, message = FALSE, echo = FALSE}
+```{r, message = FALSE}
 sat <- read_csv("datos/sat.csv")
-
 sat_tbl <- sat %>% select(state, expend, sat) %>% 
-    gather(variable, valor, expend:sat) %>% 
+    pivot_longer(cols = expend:sat, names_to = "variable", values_to = "valor") %>% 
     group_by(variable) %>% 
     summarise(cuantiles = list(cuantil(valor))) %>% 
-    unnest(cols = c(cuantiles)) %>% 
+    unnest(cols = cuantiles) %>% 
     mutate(valor = round(valor, 1)) %>% 
-    spread(cuantil, valor)
-
+    pivot_wider(names_from = cuantil, values_from = valor)
 sat_tbl %>% formatear_tabla
 ```
 
@@ -180,7 +179,7 @@ Podemos
 usar una gráfica de dispersión:
 
 
-```{r echo = FALSE}
+```{r}
  ggplot(sat, aes(x = expend, y = sat, label = state)) + 
   geom_smooth(span = 1, method = "loess") +
   geom_point(colour = "red", size = 2) + 
@@ -202,15 +201,13 @@ técnica y la respuesta que arroja no son malas.
 Después de examinar los datos, descubrimos una variable que puede ser importante: el porcentaje
 de alumnos que tomó el SAT en el año dado (*frac*). Podemos agregar al análisis como sigue (el color más claro representa un mayor porcentaje):
 
-```{r echo = FALSE}
-
+```{r}
 ggplot(sat, aes(x = expend, y = sat, label=state, colour = frac,
                  group = frac)) + 
-  #geom_smooth(span = 2, alpha = .3, size = 1) + 
   geom_point() + geom_text_repel(size = 3) +
   xlab("Gasto por alumno (miles de dólares)") +
   ylab("Calificación promedio en SAT") +
-  scale_color_gradient(low = "coral1", high = "firebrick4")
+  scale_color_gradient(low = "orange", high = "black")
 ```
 
 
@@ -220,18 +217,17 @@ fracción baja de los estudiantes toma el examen. La diferencia
 es considerable (de menos de 20% de los alumnos hasta 80%), y la relación
 es fuerte:
 
-```{r,  echo = FALSE}
+```{r, message = FALSE}
 ggplot(sat, aes(x = frac, y = sat, label = state, colour = frac)) + 
   geom_point() +
-    geom_smooth(method = "loess", span = 0.5, se = FALSE, method.args = list(degree = 1),
-                col = "blue") +
-    annotate("text", x = 40, y = 1050, 
-             label = "Desempeño por \n encima del esperado", colour = "gray30") +
-    annotate("text", x = 15, y = 900, 
-             label = "Desempeño por \n abajo del esperado", colour  = "gray30")  +
+    geom_smooth(method = "loess", span = 0.5, se = FALSE, 
+                method.args = list(degree = 1), col = "blue") +
+    annotate("text", x = 40, y = 1050, label = "Desempeño por \n encima del esperado", 
+             colour = "gray30") +
+    annotate("text", x = 15, y = 900, label = "Desempeño por \n abajo del esperado", 
+             colour  = "gray30")  +
   theme(legend.position = "none") +
   scale_color_gradient(low = "coral1", high = "firebrick4")
-
 ```
 
 Este patrón se observaría cuando los mejores alumnos en cada
@@ -250,35 +246,29 @@ más en educación son los que obtienen los mejores resultados en el SAT?
 En este punto podemos hacer varias cosas. Una primera idea es intentar comparar
 estados más similares en cuanto a la población de alumnos que asiste. Para esto, hacemos conglomerados con respecto a la fracción de alumnos que presentan el SAT. 
 
-```{r, echo=FALSE, include=FALSE}
+```{r}
 set.seed(991)
-
 sat$grupo <- 
-  kmeans(sat %>% select(frac), 
-                    centers = 4,  nstart = 100, iter.max = 100)$cluster
-
+  kmeans(sat %>% select(frac), centers = 4,  nstart = 100, iter.max = 100) %>%
+  augment(sat) %>% 
+  pull(.cluster)
 sat <- 
   sat %>% group_by(grupo) %>% 
   mutate(grupo_mediana_frac = round(median(frac))) %>% 
   ungroup %>% 
   mutate(grupo_mediana_frac = factor(grupo_mediana_frac),
          grupo = as.numeric(grupo_mediana_frac))
-
-
- sat %>% 
+sat %>% 
    group_by(grupo) %>%
    summarise(median_frac = median(frac)) %>%
    arrange(median_frac) %>%
    knitr::kable(format  =  "html",
                digits  =  2,
                format.args  =  list(decimal.mark  =  '.', big.mark  =  ",")) 
-
-
 ```
 
 
-```{r, echo = TRUE, echo=FALSE, include=FALSE}
-
+```{r}
 sat <- 
   sat %>% mutate(rank_p = rank(frac, ties= "first") / length(frac))
 
@@ -292,7 +282,7 @@ ggplot(sat, aes(x = rank_p, y = frac, label = state,
 
 Incluyendo en nuestro análisis el porcentaje de participación, empezamos a ver otra historia. Ajustamos rectas de mínimos cuadrados (regresiones lineales) en cada grupo como referencia:
 
-```{r, echo = FALSE}
+```{r, message=FALSE}
 ggplot(sat, aes(x = expend, y = sat, label=state, 
                 colour = grupo_mediana_frac)) + 
   geom_point(size = 2) + 
@@ -300,12 +290,6 @@ ggplot(sat, aes(x = expend, y = sat, label=state,
   xlab("Gasto por alumno (miles)") +
   ylab("Calificación promedio en SAT") + paleta +
   geom_text_repel(colour = "gray70", size = 2) 
-```
-
-Y esta comparación intenta responder una pregunta más fina y mejor. 
-
-```{block2, type="pregunta"}
-¿Qué nos dice esta gráfica?
 ```
 
 Este análisis también nos sugiere que la pregunta requiere afinación adicional. 
