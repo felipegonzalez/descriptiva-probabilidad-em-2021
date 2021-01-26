@@ -1,0 +1,36 @@
+--- 
+title: "Estadística Descriptiva y Probabilidad"
+author: "Felipe González"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+documentclass: book
+bibliography: [book.bib, packages.bib]
+biblio-style: apalike
+link-citations: yes
+description: "Introducción a análisis descriptivo y exploratorio y probabilidad"
+---
+
+# Introducción
+
+
+## Temario
+
+Por sesiones:
+
+1. Introducción al análisis de datos: objetivos y tipos de análisis
+2. Técnicas para describir datos univariados numéricos y categóricos
+3. Métodos para describir datos bivariados: mediciones continuas
+4. Métodos para describir datos bivariados: mediciones categóricas
+5. Extensiones multivariadas para descripción y exploración de datos. Filtros y agrupaciones
+6. Introducción al cálculo de probabilidades y su papel en el análisis de datos
+7. Reglas básicas para operar con probabilidades. Básicos de simulación 
+8. Probabilidad condicional e independencia
+9. Aplicaciones de modelos básicos de probabilidad al análisis de datos. Simulación e
+introducción a pruebas de hipótesis
+10. Modelos probabilísticos para variables continuas 1
+11. Modelos probabilísticos para variables continuas 2
+12. Apĺicaciones de modelos básicos continuos al análisis de datos. Simulación 
+
+
+
+
