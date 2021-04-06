@@ -1,4 +1,7 @@
-bookdown::gitbook:
+bookdown::bs4_book:
+  split_by: section
+  theme:
+    primary: "#637238"
   css: style.css
   config:
     toc:

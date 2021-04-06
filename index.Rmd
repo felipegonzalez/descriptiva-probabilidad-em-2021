@@ -10,12 +10,8 @@ link-citations: yes
 description: "Introducción a análisis descriptivo y exploratorio y probabilidad"
 ---
 
-# Introducción
+# Temario
 
-
-## Temario
-
-Por sesiones:
 
 1. Introducción al análisis de datos: objetivos y tipos de análisis
 2. Técnicas para describir datos univariados numéricos y categóricos
