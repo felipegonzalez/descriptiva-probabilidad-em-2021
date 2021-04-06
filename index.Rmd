@@ -17,7 +17,7 @@ description: "Introducción a análisis descriptivo y exploratorio y probabilida
 2. Técnicas para describir datos univariados numéricos y categóricos
 3. Métodos para describir datos bivariados: mediciones continuas
 4. Métodos para describir datos bivariados: mediciones categóricas
-5. Extensiones multivariadas para descripción y exploración de datos. Filtros y agrupaciones
+5. Extensiones multivariadas para descripción y exploración de datos. 
 6. Introducción al cálculo de probabilidades y su papel en el análisis de datos
 7. Reglas básicas para operar con probabilidades. Básicos de simulación 
 8. Probabilidad condicional e independencia
@@ -27,6 +27,18 @@ introducción a pruebas de hipótesis
 11. Modelos probabilísticos para variables continuas 2
 12. Apĺicaciones de modelos básicos continuos al análisis de datos. Simulación 
 
+## Material
 
+- El código para este curso está [en este repositorio de github](github.com). 
+- [Notas de clase](netlify.com)
+- Usaremos también Rstudio cloud para hacer prácticas optativas
+
+## Complementos
+
+Algunos buenos complementos para este curso pueden ser
+
+- [Visualizing Data](https://books.google.com.mx/books/about/Visualizing_Data.html?id=V-dQAAAAMAAJ&redir_esc=y), de William S. Cleveland
+- [R for Data Science](https://r4ds.had.co.nz/)
+- [A First Course in Probability](https://books.google.com.mx/books?id=Bc1FAQAAIAAJ&q=first+course+in+probability+sheldon+ross&dq=first+course+in+probability+sheldon+ross&hl=es&sa=X&ved=2ahUKEwjggJ-SrOrvAhVD-6wKHZ1EAckQ6AEwAHoECAIQAg), Sheldon Ross
 
 
