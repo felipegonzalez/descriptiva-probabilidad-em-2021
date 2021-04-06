@@ -25,13 +25,15 @@ description: "Introducción a análisis descriptivo y exploratorio y probabilida
 introducción a pruebas de hipótesis
 10. Modelos probabilísticos para variables continuas 1
 11. Modelos probabilísticos para variables continuas 2
-12. Apĺicaciones de modelos básicos continuos al análisis de datos. Simulación 
+12. Aplicaciones de modelos básicos continuos al análisis de datos. Simulación 
+
 
 ## Material
 
-- El código para este curso está [en este repositorio de github](github.com). 
-- [Notas de clase](netlify.com)
+- El código para este curso está [en este repositorio de github](https://github.com/felipegonzalez/descriptiva-probabilidad-em-2021). 
+- [Notas de clase](https://descriptiva-probabilidad-em.netlify.app/index.html).
 - Usaremos también Rstudio cloud para hacer prácticas optativas
+
 
 ## Complementos
 
@@ -41,4 +43,6 @@ Algunos buenos complementos para este curso pueden ser
 - [R for Data Science](https://r4ds.had.co.nz/)
 - [A First Course in Probability](https://books.google.com.mx/books?id=Bc1FAQAAIAAJ&q=first+course+in+probability+sheldon+ross&dq=first+course+in+probability+sheldon+ross&hl=es&sa=X&ved=2ahUKEwjggJ-SrOrvAhVD-6wKHZ1EAckQ6AEwAHoECAIQAg), Sheldon Ross
 
+## Instructor
 
+- [Felipe González](https://github.com/felipegonzalez)
