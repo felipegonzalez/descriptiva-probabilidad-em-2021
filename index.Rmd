@@ -42,6 +42,7 @@ Algunos buenos complementos para este curso pueden ser
 - [Visualizing Data](https://books.google.com.mx/books/about/Visualizing_Data.html?id=V-dQAAAAMAAJ&redir_esc=y), de William S. Cleveland
 - [R for Data Science](https://r4ds.had.co.nz/)
 - [A First Course in Probability](https://books.google.com.mx/books?id=Bc1FAQAAIAAJ&q=first+course+in+probability+sheldon+ross&dq=first+course+in+probability+sheldon+ross&hl=es&sa=X&ved=2ahUKEwjggJ-SrOrvAhVD-6wKHZ1EAckQ6AEwAHoECAIQAg), Sheldon Ross
+- Una guía de  [básicos de manipulación de datos con R](https://itsalocke.com/files/DataManipulationinR.pdf)
 
 ## Instructor
 
