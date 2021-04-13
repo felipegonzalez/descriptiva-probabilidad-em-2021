@@ -78,7 +78,7 @@ según el orden que ocupan.
 ```{block2, type = "comentario"}
 El cuantil $f$ de un bonche de datos numéricos es el valor $q(f)$, en la
 escala de medición de nuestros datos, tal que
-aproximadamente una fracción $f$ de los datos está por abajo de $x_f$.
+aproximadamente una fracción $f$ de los datos está por abajo de $q(f)$.
 
 - Al cuantil $f=0.5$ le llamamos la mediana.
 - A los cuantiles $f=0.25$ y $f=0.75$ les llamamos cuantiles inferior y superior.
@@ -87,7 +87,7 @@ aproximadamente una fracción $f$ de los datos está por abajo de $x_f$.
 
 
 
-**Dispersión y Valores centrales**
+**Dispersión y valores centrales**
 
 - El *rango* de datos va de unos 3 dólares hasta 50 dólares
 - Los **valores centrales** (del cuantil 0.25 al 0.75, por ejemplo), están
@@ -363,8 +363,7 @@ enigh %>%
 ```
 
 Para obtener una gŕafica más informativa,  podemos utilizar una escala logarítmica. El 
-logaritmo de los ingresos es más fácil de describir y veremos también más fácil de trabajar
-en general.
+logaritmo de los ingresos es más fácil de describir y veremos también más fácil de trabajar.
 
 ```{r, fig.width = 4, fig.height = 3}
 ggplot(enigh, 
@@ -372,4 +371,147 @@ ggplot(enigh,
   geom_histogram(binwidth = 0.12) +
   scale_x_log10(breaks = c(1, 2, 4, 8, 16, 32, 64, 128, 256))
 ```
+
+
+## Factor y respuesta numéricos
+
+En las secciones anteriores vimos cómo describir "bonches" de datos numéricos
+y categóricos. Adicionalmente, vimos cómo usar esas técnicas para comparar 
+las descripciones a lo largo de varios subconjuntos de los datos.
+
+En estos casos, muchas veces llamamos *factor* a la variables que forma
+los grupos, y *respuesta* a la variable que estamos comparando. Por ejemplo,
+en el caso de tomadores de té comparamos uso de complementos (respuesta) a lo largo
+de consumidores de distintos tipos de té (factor) En el caso
+de los precios de las casas comparamos el precio de las casas (respuesta) dependiendo
+del vecindario (factor) dónde se encuentran.
+
+Cuando tenemos una factor numérico y una respuesta numérica podemos comenzar
+haciendo diagramas de dispersión. Por ejemplo, 
+
+## Ejemplo: cuenta total y propina {-}
+
+```{r, message = FALSE}
+library(tidyverse)
+library(patchwork)
+library(kableExtra)
+# usamos los datos tips del paquete reshape2
+propinas <- read_csv("./datos/propinas.csv")
+```
+
+Podríamos comenzar haciendo:
+
+```{r}
+ggplot(propinas, aes(x = cuenta_total, y = propina)) +
+   geom_point() + geom_rug(colour = "salmon", alpha = 0.5)
+```
+Ahora queremos comparar la distribución de propina (respuesta) para distintos
+niveles del factor (cuenta_total). Por ejemplo, ¿cómo se compara propina
+cuando la cuenta es de 15 dólares vs 30 dólares?
+
+
+```{r}
+ggplot(propinas, aes(x = cuenta_total, y = propina)) +
+   geom_vline(xintercept = c(15, 30), colour = "red") +
+   geom_point() 
+```
+Vemos que los datos de propinas alrededor de 30 dólares están centrados en valores más
+grandes que en el nivel de 15 dólares, y también que hay más dispersión en el nivel de 30
+dólares. Sin embargo, vemos que tenemos un problema: *existen realmente muy pocos datos que
+tengan exactamente 15 o 30 dólares de cuenta*. La estrategia es entonces considerar qué
+sucede cuando la cuenta está alrededor de 15 o alrededor de 30 dólares,  donde *alrededor*
+depende del problema particular y de cuántos datos tenemos:
+
+```{r}
+ggplot(propinas, aes(x = cuenta_total, y = propina)) +
+   geom_ribbon(aes(xmin = 13, xmax = 17), fill = "salmon", alpha = 0.5) +
+   geom_ribbon(aes(xmin = 28, xmax = 32), fill = "salmon", alpha = 0.5) +
+   geom_point() 
+```
+Considerando estos grupos de datos, podemos describir de las siguiente forma, por ejemplo:
+
+```{r}
+propinas %>% 
+   mutate(grupo = cut(cuenta_total,  breaks = c(0, 13, 17, 28, 32))) %>% 
+   filter(grupo %in% c("(13,17]", "(28,32]")) %>% 
+   group_by(grupo) %>% 
+   summarise(
+      n = n(),
+      q10 = quantile(propina, 0.10),
+      mediana = quantile(propina, 0.5),
+      q90 = quantile(propina, 0.90),
+      rango_cuartiles = quantile(propina, 0.75) - quantile(propina, 0.25)) %>% 
+   kable(digits = 2)
+```
+
+Conde confirmamos que el nivel general de propinas es más alto alrededor de cuentas
+de total 30 que de total 15, y la dispersión también es mayor. Podríamos hacer un diagrama
+de caja y brazos también.
+
+## Suavizadores locales
+
+El enfoque del ejemplo anterior puede ayudar en algunos casos 
+nuestra tarea descriptiva, pero 
+quisiéramos tener un método más general y completo 
+para entender cómo es una respuesta numérica cuando el factor es también numérico.
+
+En este caso, podemos hacer por ejemplo medias o medianas locales. La idea general
+es, en términos de nuestro ejemplo de propinas:
+
+- Queremos producir un resumen en un valor de cuenta total $x$.
+- Consideramos valores de propina asociados a cuentas totales en un intervalo $[x-e, x+e]$.
+- Calculamos estadísticas resumen en este rango para la respuesta
+- Usualmente también ponderamos más alto valores que están cerca de $x$ y ponderamos menos valores
+más lejanos a $x$
+
+Este tipo de suavizadores se llaman a veces *suavizadores loess* (ver [@ClevelandVis]).
+
+Por ejemplo,
+
+```{r}
+ggplot(propinas, aes(x = cuenta_total, y = propina)) +
+   geom_ribbon(aes(xmin = 13, xmax = 17), fill = "salmon", alpha = 0.15) +
+   geom_ribbon(aes(xmin = 28, xmax = 32), fill = "salmon", alpha = 0.15) +
+   geom_point() +
+   geom_smooth(method = "loess", span = 0.5, degree= 0, 
+               method.args = list(family = "symmetric"), se = FALSE) 
+# symmetric es un método robusto iterativo, que reduce el peso de atípicos
+```
+
+
+El parametro *span* controla el tamaño de la ventana de datos que se toma en cada punto.
+Nótese como alrededor de 15 y 30 los valores por donde pasa el suavizador son
+similares a las medianas que escribimos arriba.
+
+Podemos ajustar en cada ventana tambien rectas de minimos cuadrados, y obtener
+un suavizador de tipo lineal. En la siguiente gráfica mostramos cómo funciona este
+suavizador para distintos tamaños de ventanas (*span*)
+
+![Suavizador loess](./figuras/loess-spans.gif)
+
+```{block2 ,type="comentario"}
+Los **suavizadores loess** tienen como fin mostrar alrededor de qué valor de distribuye
+la respuesta (eje vertical) para distintos valores del factor (eje horizontal). Se escoge
+*span* suficientemente baja de forma que mostremos patrones claros en los datos y casi no
+capturemos variación debida a los tamaños de muestra chicos.
+```
+
+En la animación anterior, un valor de span de 0.15 funciona aprpiadamente, y uno de 0.05
+es demasiado bajo y uno de 1.0 es demasiado alto. Es importante explorar con el valor
+de span pues depende de cuántos datos tenemos y cómo es su dispersión.
+
+Podemos también mostrar estimaciones de medianas y cuantiles de la siguiente 
+forma (nota: es necesario escoger *lambda* con cuidado, cuanto más alto
+sea *lambda* más suave es la curva obtenida):
+
+```{r}
+ggplot(propinas, aes(x = cuenta_total, y = propina)) +
+   geom_ribbon(aes(xmin = 13, xmax = 17), fill = "salmon", alpha = 0.15) +
+   geom_ribbon(aes(xmin = 28, xmax = 32), fill = "salmon", alpha = 0.15) +
+   geom_point() +
+   geom_quantile(method = "rqss", lambda = 15, quantiles = c(0.25, 0.5, 0.75)) +
+   scale_y_continuous(breaks = seq(0, 10, 1))
+```
+
+
 
