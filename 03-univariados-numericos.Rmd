@@ -513,5 +513,39 @@ ggplot(propinas, aes(x = cuenta_total, y = propina)) +
    scale_y_continuous(breaks = seq(0, 10, 1))
 ```
 
+Finalmente, entendimiento de los datos no permite también hacer gráficas más
+útiles. En este ejemplo particular podría por ejemplo calcular el porcentaje de
+la propina sobre la cuenta total:
 
+```{r}
+ggplot(propinas, aes(x = cuenta_total, y = pct_propina)) +
+   geom_point() +
+   scale_y_continuous(breaks = seq(0,1, 0.05)) +
+   geom_quantile(method = "rqss", lambda = 15, quantiles = c(0.25, 0.5, 0.75))
+```
 
+Observa que la descripción es más simple que si usamos propina cruda y cuenta
+
+- Para cuentas chicas, el porcentaje de propina puede ser muy alto (aún cuando
+la propina en sí no es tan grande):
+
+```{r}
+filter(propinas, pct_propina > 0.30) %>% 
+  arrange(desc(pct_propina)) %>% 
+  kable(digits = 2)
+```
+
+- Para cuentas relativamente chicas (10 dólares, el porcentaje de propina está por
+encima de 15%). Este porcentaje tiende a reducirse a valores 10% y 15% para cuentas más grandes
+- Existe variación considerable alrededor de estos valores centrales. El rango 
+intercuartiles es aproximadamente de 5 puntos porcentuales.
+
+O de manera más resumida:
+
+- La mediana de propinas está ligeramente por arriba de 15% para cuantas relativamente
+chicas. Esta mediana baja hasta alrededor de 10%-15% para cuentas más grandes (más de 40 dólares)
+- La mitad de las propinas no varía más de unos 3 puntos porcentuales alrededor de estas
+medianas.
+- Existen propinas atípicas: algunas muy bajas de 1 dólar, muy por debajo del 15%, 
+y ocasionalmente algunas muy altas en porcentaje. Estas últimas ocurren ocasinalmente
+especialmente en cuentas chicas (por ejemplo, una propina de 1 dólar en una cuenta de 3 dólares).
