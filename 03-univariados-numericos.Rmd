@@ -518,6 +518,7 @@ Finalmente, entendimiento de los datos no permite también hacer gráficas más
 la propina sobre la cuenta total:
 
 ```{r}
+propinas <- mutate(propinas, pct_propina = propina / cuenta_total)
 ggplot(propinas, aes(x = cuenta_total, y = pct_propina)) +
    geom_point() +
    scale_y_continuous(breaks = seq(0,1, 0.05)) +
