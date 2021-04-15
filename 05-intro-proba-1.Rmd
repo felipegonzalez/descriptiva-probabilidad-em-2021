@@ -1,0 +1,303 @@
+# Introducción a Teoría de probabilidad
+
+```{r, message = FALSE, echo = FALSE, include = FALSE}
+knitr::opts_chunk$set(
+    comment = "#>",
+    collapse = TRUE,
+    fig.align = "center", 
+    error = FALSE,
+    cache = FALSE
+)
+ggplot2::theme_set(ggplot2::theme_light())
+library(tidyverse)
+library(patchwork)
+library(kableExtra)
+```
+
+En esta parte comenzaremos a tratar el concepto de *probabilidad* de ocurrencia de eventos
+acerca de los que tenemos incertidumbre. Veremos que:
+
+- Hay distintas maneras de interpretar los *probabilidad* e *incertidumbre*, y hay 
+distintas maneras de usar información probabilística para tomar decisiones.
+- Sin embargo, existe una teoría matemática que formaliza cómo debe operarse con 
+probabilidades, independientemente de la interpretación.
+- Podemos utilizar esta teoría matemática para construir *modelos* compactos o parsimoniosos
+que explican observaciones de datos reales.
+
+## Equiprobabilidad y simetría
+
+Históricamente, el concepto de probabilidad nació en el contexto de juegos de azar, y 
+cómo definir apuestas ajustas o equitativas. Por ejemplo:
+
+- Supongamos que nos cuesta 1 peso entrar a un juego de dados, y que ganamos si tiramos
+un 3. ¿Cuánto dinero deberíamos ganar si sale un 3 para que el costo de entrada sea justo?
+
+El argumento iría como sigue: existen 6 posibles resultados, y como el dado se tira bien y
+está bien hecho, entonces sería lo mismo apostar a cualquier número. Entonces, si 
+seis personas entran al juego apostando a distintos números, 
+cada uno pagando 1 peso, sería justo que el ganador se llevara 6 pesos.
+
+- En este caso, definimos la **probabilidad** de obtener un 3 (o cualquier otro número) 
+como 1/6, que es cociente entre la apuesta inicial entre la cantidad recibida si ganamos la 
+apuesta justa.
+
+Nótese que el criterio de "justicia" proviene de simetrías del experimento: si el dado
+no fuera simétrico, por ejemplo, esta sería una manera mala de definir probabilidades.
+
+En general, una manera de difinir probabilidad es la siguiente:
+
+```{block2, type="comentario"}
+**Espacios equiprobables**
+
+Si un evento $A$ puede ocurrir de $k$ maneras de $n$ posibles, y es indiferente
+apostar a cualquiera de los $n$ posibles resultados, entonces
+$$P(A) = \frac{k}{n}$$
+```
+
+Con este enfoque podemos resolver diversos problemas de probabilidad, por ejemplo:
+
+## Ejemplo: dados {-}
+
+¿Cuál es la probabilidad de que tiremos una suma de 9 con dos dados de seis lados?
+
+En este caso, los resultados son pares $(x, y)$ donde $x$ es el resultado del dado 1
+y $y$ es el resultado del dado 2. Existen 36 pares, y todos ellos son equivalentes.
+Para tirar un 9, tenemos que lograr alguna de las siguientes tiradas:
+$$(3, 6), (4, 5), (5, 4), (6, 3)$$
+De modo que la probabilidad de tirar una suma de 9 , que escribimos como $S=9$, es 
+$$P(S = 9) = 4/36 = 1/9$$
+
+## Ejemplo: cartas {-}
+Sacamos dos cartas sucesivamente de una baraja de 52 cartas, donde 26 son negras y 26 rojas.
+¿Cuál es la probabilidad de que la segunda carta que saquemos sea negra?
+Podemos denotar como $N_2$ el evento que sucede cuando la segunda carta que sacamos es negra.
+La segunda carta que sacamos puede ser cualquiera de las 52, y somos indiferentes en apostar
+a cualquira de las cartas para salir en segundo lugar, así que
+$$P(N_2) = 26 / 52 = 1/2$$
+Estos espacios equiprobables nos dan nuestros modelos probabilísticos más simples. Están
+basados en simetrías del espacio de resultados.
+
+## Probabilidad y frecuencias relativas
+
+La conexión entre experimentos reales y modelos de probabilidad, está en que, 
+si repetimos muchas veces el experimento, entonces las frecuencias relativas 
+de ocurrencia de los eventos aproxima a las probabilidades teóricas. Por ejemplo, si tiramos
+muchos volados con una moneda bien balanceada, esperamos obtener alrededor de 1/2 de soles
+y 1/2 de águilas, y si tiramos un dado muchas veces esperamos obtener alrededor de 1/6 de las
+tiradas un 5, por ejemplo (bajo los modelos de resultados equiprobables correspondientes).
+
+En realidad, esta 
+es otra *definición* de probabilidad en términos de repeticiones de experimentos.
+
+```{block2, type="comentario"}
+**Probabilidades y frecuencias**
+
+Supongamos que repetimos una gran cantidad $n$ de veces un experimento, y que registramos
+$k_n$ = cuántas veces ocurre un evento $A$. La probabilidad de que ocurra $A$ es
+
+$$\lim_{n\to\infty} \frac{k_n}{n} \to P(A), $$
+
+es decir, $P(A)$ el la frecuencia al largo plazo de ocurrencia de $A$.
+```
+
+Aunque podríamos hacer algunos experimentos físicos más reales, para este curso
+podemos hacer simulaciones de computadora del experimento que nos interesa. 
+
+## Ejemplo: simulación de un dado {-}
+
+Primero hacemos un dado. Podemos simular una tirada de dado como:
+
+```{r}
+simular_dado <- function(caras = 1:6){
+   sample(caras, 1)
+}
+simular_dado()
+```
+Ahora simulamos una gran cantidad de tiradas de dado:
+
+```{r}
+set.seed(199213)
+n <- 5000
+sims_dado <- map_df(1:n, ~ c(n_sim = .x, resultado = simular_dado()))
+head(sims_dado) 
+```
+Esta es una variable numérica, pero como toma valores enteros del uno al seis,
+podemos resumir con frecuencias, como si fuera categórica:
+
+```{r}
+sims_dado %>% 
+   count(resultado) %>% 
+   mutate(frec_relativa = n / sum(n))
+```
+Y nuestro modelo teórico (resultados equiprobables) coincide razonablemente
+bien con las frecuencias observadas a largo plazo. Podemos ver cómo convergen
+las frecuencias relativas por ejemplo del resultado 1:
+
+```{r}
+sims_dado %>% 
+   mutate(no_unos = cumsum(resultado == 1)) %>% 
+   mutate(frec_uno = no_unos / n_sim) %>%
+   filter(n_sim < 5000) %>% 
+ggplot(aes(x = n_sim, y = frec_uno)) +
+   geom_hline(yintercept = 1/6, colour = "red") +
+   geom_line() + ylab("Frecuencia relativa de unos")
+
+```
+Nótese que cuando hay pocas repeticiones podemos ver fluctuaciones considerablemente
+grandes de la frecuencia relativa observada de unos. Sin embargo, conforme aumentamos
+el tamaño de la meustra observada, esas fluctuaciones son más chicas.
+
+Veamos otra simulación:
+
+```{r}
+sims_dado <- map_df(1:n, ~ c(n_sim = .x, resultado = simular_dado()))
+sims_dado %>% 
+   mutate(no_unos = cumsum(resultado == 1)) %>% 
+   mutate(frec_uno = no_unos / n_sim) %>%
+   filter(n_sim < 5000) %>% 
+ggplot(aes(x = n_sim, y = frec_uno)) +
+   geom_hline(yintercept = 1/6, colour = "red") +
+   geom_line() + ylab("Frecuencia relativa de unos")
+```
+
+
+
+## Datos y modelos de probabilidad
+
+¿Cómo podemos usar modelos de probablidad para describir datos observados? 
+La idea (simplificada) es la siguiente:
+
+- Hacemos una hipótesis acerca de cómo es el modelo de probabilidad asociado
+a un fenómeno
+- Observamos una muestra de datos del fenómeno que nos interesa
+- Evaluamos si las fluctuaciones observadas debidas a la información limitada que tenemos
+(una muestra) son consistentes con el modelo de probabilidad
+
+Consideremos el ejemplo de los dados. Supongamos que lanzamos el dado un número
+no muy grande de veces, y observamos:
+
+```{r}
+frecs_obs <- tibble(resultado = 1:6,
+                    n = c(5, 7, 5, 10, 8, 5)) %>% 
+   mutate(frec = n / sum(n))
+frecs_obs %>% kable(digits = 2)
+```
+
+Y nos preguntamos si este resultado podría ser observado bajo los supuestos
+de nuestro modelo de probabilidad, que en este caso, es el de resultados equiprobables.
+Podemos por ejemplo graficar los datos junto con simulaciones del modelo, en búsqueda
+de desajustes:
+
+```{r}
+set.seed(8834)
+# una vez
+sim_exp <- map_df(1:40, ~ c(id = .x, resultado = simular_dado()))
+# 19 veces
+sims_exp <- map_df(1:19, function(x){
+         sims <- map_df(1:40, ~ c(id = .x, resultado = simular_dado()) )
+         sims$rep <- x
+         sims
+         })
+```
+
+```{r}
+frec_sims <- sims_exp %>% 
+   group_by(rep, resultado) %>% 
+   summarise(n = n()) %>% 
+   mutate(frec = n / sum(n))
+obs_sims_tbl <- bind_rows(frec_sims, frecs_obs %>% mutate(rep = 20))
+ggplot(obs_sims_tbl, aes(x = resultado, y = frec)) +
+   geom_col() +
+   facet_wrap(~rep)
+```
+
+En este caso, no vemos ninguna característica de los datos observados que no sea
+consistente las fluctuaciones esperadas para un tamaño de muestra de $n=40$.
+
+**Pregunta**: ¿qué defecto le ves a esta gráfica que tiene los datos en la posición
+20? ¿Cómo podríamos hacer una evaluación más apropiada de la calidad del ajuste?
+
+**Observación**: como veremos, muchas veces proponemos modelos que tienen parámetros
+que deben ser estimados con la muestra. Este caso más común es más complejo
+que el explicado arriba, pero el proceso es similar.
+
+## Espacios no equiprobables
+
+Depende cómo planteemos nuestro experimento aleatorio, puede ser o no apropiado
+el modelo equiprobable. Veremos ahora algunos ejemplos donde construimos 
+modelos no equiprobables
+
+## Ejemplo: dos dados {-}
+
+Supongamos que nos interesa la suma de dos tiradas de dados. Comenzamos con un
+modelo equiprobable sobre los resultados de cada tirada, que denotamos como $(x,y)$. 
+Cada resultado tiene probabilidad 1/36. 
+
+Sin embargo, sólo nos interesa la suma. Contando posibles resultados podemos
+dar la probabilidad de cada resultado:
+
+| Suma | Resultados | Prob|
+|------|------------|-----|
+| 2 | (1,1) | 1/36 |
+| 3 | (1,2),(2,1) | 2/36 |
+| 4 | (1,3),(2,2),(3,1) | 3/36 |
+| 5 | (1,4),(2,3),(3,2),(4,1) | 4/36 |
+| 6 | (1,5),(2,4),(3,3),(4,2),(5,1) | 5/36 |
+| 7 | (1,6),(2,5),(3,4),(4,3),(5,2),(6,1)| 6/36 |
+| 8 | (2,6),(3,5),(4,4),(5,3),(6,2) | 5/35 |
+| 9 | (3,6),(4,5),(5,4),(6,3) | 4/36 |
+| 10| (4,6),(5,5),(6,4) | 3/36 |
+| 11| (5,6), (6,5) | 2/36 |
+| 12| (6,6) | 1/36 |
+
+Y entonces terminamos con la siguiente distribución no equiprobable sobre
+las posibles sumas:
+
+```{r}
+probs_suma <- tibble(suma = 2:12) %>% 
+   mutate(prob = (6 - abs(suma - 7)) / 36)
+probs_suma %>% kable(digits = 3)
+```
+
+Esta distribución la podemos graficar como sigue:
+
+```{r, fig.width=4, fig.height=3}
+g_teorica <- ggplot(probs_suma, aes(x = suma, y = prob)) +
+   geom_col() +
+   scale_x_continuous(breaks = 2:12)
+g_teorica
+```
+
+
+
+
+
+Y podemos ahora simular de este modelo teórico:
+
+```{r, fig.width=4, fig.height=3}
+simular_suma <- function(){
+   probs_suma <- (6 - abs(2:12 - 7)) / 36
+   sample(2:12, 1, prob = probs_suma)
+}
+set.seed(83)
+sims_suma <- map_dbl(1:200, ~ simular_suma())
+head(sims_suma) %>% kable()
+```
+
+Ahora calculamos las frecuencias relativas observadas y graficamos
+
+```{r, fig.width=4, fig.height=3}
+sims_frec <- tibble(suma = sims_suma) %>% 
+   count(suma) %>% 
+   mutate(frec = n / sum(n))
+g_obs <- ggplot(sims_frec, aes(x = suma, y = frec)) +
+   geom_col() +
+   scale_x_continuous(breaks = 2:12)
+g_obs
+```
+Y comparamos:
+
+```{r, fig.height = 4}
+g_teorica + g_obs
+```
+
