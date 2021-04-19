@@ -1,0 +1,60 @@
+# Probabilidad condicional e independencia
+
+Uno los conceptos centrales de la probabilidad es el de probabilidad condicional:
+
+1. Muchas veces queremos calcular probabilidades dada cierta información parcial: es decir,
+las probabilidades que queremos calcular son *condicionadanas* a cierto tipo de información
+2. La probabilidad condicional nos permite modelar con probabilidad sistemas relativamente
+complejos a partir de componentes simples.
+
+## Probabilidad condicional en espacios equiprobables.
+
+Supongamos que en un experimento simétro de $n$ posibles resultados,
+sabemos que ocurrió el evento $F$, es decir, un conjunto de resultados fijo.
+¿Cómo podemos calcular la probabilidad de que ocurra un evento $E$ dado que
+sabemos que $F$ ocurrió? Esta probabilidad se escribe
+
+$$P(E|F)$$
+
+### Ejemplo: dos dados
+
+Supongamos que tiramos dos dados, y nos dicen que la suma de los dos datos es igual
+a 6. ¿Cuál es la probablidad condicional de haber tirado al menos un cinco dado
+que la suma es 6?
+
+Solución: los resultados equiprobables que resultan en un tiro de suma 6
+son $F= \{ (5,1),(4,2),(3,3),(2,4),(1,5)\}$, que son 5 posibles resultados. En solamente
+2 de ellos tiramos un cinco. Como estos resultados son equiprobables, si $E$ es el
+evento "tirar al menos un 5",
+$$P(E|F) = 2/5$$
+Podemos formalizar de la siguiente manera: para calcular $P(E|F)$ contamos todos
+los resultados de $F$ donde también ocurre $E$ y dividimos entre las maneras en que
+puede ocurrir $F$:
+
+- En nuestro caso hay muchos resultados posibles donde tiramos al menos un 5, por ejemplo
+$(5,1), (5,2), (5,6)$ y así sucesivamente. Sin embargo, solo en 2 de ellos la suma
+es 5.
+
+```{block2, type="comentario"}
+En un espacio de resultados equiprobables, si $E$ y $F$ son eventos, entonces
+$$P(E|F) = \frac{|E\cap F|}{|F|},$$
+es decir, dividimos el número de maneras en que pueden ocurrir $E$ y $F$ simultáneamente
+entre el número de maneras en que puede ocurrir $F$.
+```
+
+Nótese que otra manera de ver esta definición es como sigue: una vez que sabemos 
+que ocurrió $F$, restringimos todo nuestro análisis a resultados dentro de $F$, y proseguimos
+como si se tratara de una probabilidad usual.
+
+### Ejemplo: dos volados
+
+Supongamos que tiramos dos volados. Cuál es la probabilidad 
+condicional de que los dos
+volados sean sol dado que 1) El primer volado es sol? 2) Alguno de los dos volados es sol, 3) Los dos volados son águilas? 
+
+Hay 2 resultados donde el primer volado es sol (enuméralos), así que la primer 
+probabilidad es $P(E|F_1)=1/2$. Explica por qué la segunda probabilidad condicional
+es igual a $P(E|F_2)=1/3$. ¿Cuánto vale P(E|F_3)?
+
+
+
