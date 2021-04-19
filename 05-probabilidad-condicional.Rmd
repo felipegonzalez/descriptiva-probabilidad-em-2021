@@ -3,9 +3,11 @@
 Uno los conceptos centrales de la probabilidad es el de probabilidad condicional:
 
 1. Muchas veces queremos calcular probabilidades dada cierta información parcial: es decir,
-las probabilidades que queremos calcular son *condicionadanas* a cierto tipo de información
+las probabilidades que queremos calcular son *condicionadas* a cierto tipo de información
 2. La probabilidad condicional nos permite modelar con probabilidad sistemas relativamente
 complejos a partir de componentes simples.
+
+Muchos de los problemas de esta sección son de (@rossproba).
 
 ## Probabilidad condicional en espacios equiprobables.
 
@@ -54,7 +56,20 @@ volados sean sol dado que 1) El primer volado es sol? 2) Alguno de los dos volad
 
 Hay 2 resultados donde el primer volado es sol (enuméralos), así que la primer 
 probabilidad es $P(E|F_1)=1/2$. Explica por qué la segunda probabilidad condicional
-es igual a $P(E|F_2)=1/3$. ¿Cuánto vale P(E|F_3)?
+es igual a $P(E|F_2)=1/3$. ¿Cuánto vale $P(E|F_3)$?
 
+### Ejemplo: tres cartas
+
+Supongamos que extraemos tres cartas al azar de una baraja de 52 cartas (13 son corazones).
+Nos muestran que la segunda y la tercera carta son corazones. ¿Cuál es la probabilidad
+condicional de que la tercera sea un corazón?
+
+Solución: como resultados para las primeras tres cartas seleccionadas tenemos
+$(x_1,x_2,x_3)$. Nos interesan solamente los resultados $(x_1, corazon_1, corazon_2)$.
+Existen $13*12*11 + 39*13*12 = 7800$ resultados posibles (primero contamos los que tienen un
+corazón al principio, y luego los que no tienen un corazón al principio, de modo que la probabilidad que buscamos es
+$$\frac{13(12)(11)}{13(12)(11) + 39(13)(12)} = \frac{11}{11 + 39} = 0.22$$
+Interpreta la simplificación de arriba para describir una manera más simple
+de calcular esta probabilidad condicional.
 
 
