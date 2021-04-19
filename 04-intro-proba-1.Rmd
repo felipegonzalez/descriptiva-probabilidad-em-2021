@@ -335,7 +335,7 @@ $$P(A) = 3 / 51 \approx 0.0588$$
 - Sea $D$ el evento donde en el proceso sacamos la pelota dorada, y sea $D_1$ el
 evento donde sacamos la pelota dorada en nuestra primera extracción, $D_2$ si la sacamos
 en la segunda, etc. Tenemos que
-$$D =D_1\cupD_2\cup\cdots\cup D_{20}$$
+$$D =D_1 \cup D_2 \cup\cdots \cup D_{20}$$
 (sacamos la dorada si y sólo si la sacamos en la extracción 1, 2 , etc. hasta 20)
 Además, solo hay una pelota dorada, de manera que $D_i\cap D_j= \emptyset$, es decir,
 no pueden ocurrir juntos $D_1$ y $D_2$, $D_5$ y $D_11$, etc., así que por la regla de la suma
@@ -399,7 +399,7 @@ En la práctica, este tipo de enfoque se utiliza para poner probabilidades sobre
 cantidades o aspectos difíciles de medir directamente pero que son relativamente simples, 
 y luego se utilizan modelos y reglas de probabilidad para producir otras probabilidades de interés más complicadas.
 
-## Probabilidad subjetiva con calibración frecuentista
+## Probabilidad subjetiva y calibración frecuentista
 
 Como podemos imaginarnos, para muchas decisiones importantes, el enfoque
 subjetivo por sí solo puede no ser suficiente. Por ejemplo, imaginemos que
