@@ -347,6 +347,161 @@ misma probabilidad de aparecer en la segunda extracción. Se sigue entonces que,
 la suma de arriba, que:
 $P(D) = 20(\frac{1}{100}) = 0.20$
 
+## Simulación y probabilidad
+
+Usando la interpetación frecuentista, también es posible resolver una
+variedad de problemas de probabilidad usando *simulación*. La idea es,
+si queremos aproximar la probabilidad $P(E)$ de un evento es:
+
+1. Definimos el espacio de resultados del experimento aleatorio.
+2. Simulamos el experimento aleatorio un número grande de veces.
+3. Calculamos para cuáles de esas simulaciones se cumple el evento $E$
+4. Estimamos la frecuencia relativa de ocurrencia de $E$ a lo largo de todas las
+simulaciones.
+
+### Ejemplo: simulando dos dados {-}
+
+Para dos dados, el espacio de resultados podemos escribirlo como los
+resultados conjunto de dos tiradas: $(x,y)$. Cada dado se tira de forma separada,
+y los resultados son equiprobables. Definimos entonces:
+
+```{r}
+sim_dados <- function(num_dados = 2, num_caras = 6){
+   resultado <- sample(1:num_caras, num_dados, replace = TRUE)
+   names(resultado) <- paste0("dado_", 1:num_dados)
+   resultado
+}
+sim_dados()
+```
+Ahora simulamos un número grande de veces el experimento:
+
+```{r}
+set.seed(2323)
+sims <- map_df(1:10000, ~ sim_dados())
+sims
+```
+
+Ahora que tenemos estas simulaciones, podemos estimar por ejemplo la
+probabilidad de tirar más de nueve con dos dados. Primero calculamos
+en qué simulaciones ocurre $E$:
+
+```{r}
+sims_e <- 
+   sims %>% 
+   mutate(suma = dado_1 + dado_2) %>% 
+   mutate(evento_E = (suma > 9)) 
+sims_e
+```
+
+Y ahora calculamos la frecuencia relativa de ocurrencia de $E$
+
+```{r}
+sims_e %>% 
+   summarise(frec_e = mean(evento_E))
+```
+
+Que confirma a dos decimales el resultado que obtuvimos arriba usando la regla de
+la suma (o contando resultados).
+
+### Ejemplo: problema de pelotas {-}
+
+Extraemos al azar 
+
+```{r}
+set.seed(232)
+pelotas <- c("dorada", rep("otra", 99))
+sim_extraccion <- function(){
+    sample(pelotas, 20, replace = FALSE)
+}
+sim_extraccion()
+```
+Simulamos el experimento aleatorio:
+
+```{r}
+sims_pelotas <- map(1:10000, ~ sim_extraccion())
+sims_pelotas[1:2]
+```
+
+Checamos si ocurre o no el evento *se extrajo la pelota dorada*:
+
+```{r}
+evento_dorada <- map_lgl(sims_pelotas, ~ any(str_detect(.x, "dorada")))
+evento_dorada[1:10]                   
+```
+
+Y calculamos la frecuencia relativa de ocurrencia del evento:
+
+```{r}
+mean(evento_dorada)
+```
+Que es consistente con el resultado que obtuvimos arriba haciendo 
+cálculos.
+
+```{block2, type="comentario"}
+Para estimar probabilidades de ocurrencia de un evento usualmente es
+posible hacer simulaciones por computadora. Esto es especialmente importante
+cuando el experimento y evento que consideramos 
+hace difícil (a veces imposible) hacer cálculos analíticos.
+
+Este tipo de métodos basados en simulación se llaman en general 
+*métodos de Monte Carlo*.
+```
+
+### Ejemplo: 
+
+Supongamos que ponemos 15 puntos igualmente espaciados en una circunferencia.
+Si escogemos tres puntos al azar, ¿cuál es la probabilidad de que formen
+un triángulo equilátero? Este problema se puede resolver contando los posibles
+resultados donde se forma un triángulo equilátero, pero no es trivial. Veamos
+cómo la haríamos simulando:
+
+```{r}
+simular_3_puntos <- function(){
+   puntos_angulo <- 0:14 * (2  *pi / 15)
+   sample(puntos_angulo, 3)
+}
+simular_3_puntos()
+```
+Calcular dado el resultado requiere algo de consideración, pero finalmente
+terminamos con (¿qué otra manera se te ocurre?):
+
+```{r}
+es_equilatero <- function(tres_puntos){
+   tol <- 10^(-6)
+   puntos_ord <- sort(tres_puntos)
+   dif_1 <- puntos_ord[3] - puntos_ord[2]
+   dif_2 <- puntos_ord[2] - puntos_ord[1]
+   dif_3 <- 2*pi + puntos_ord[1] - puntos_ord[3]
+   if(abs(dif_1 - dif_2) < tol & abs(dif_2 - dif_3) < tol){
+      equilatero <- TRUE
+   } else {
+      equilatero <- FALSE
+   }
+   equilatero
+}
+```
+
+Simulamos:
+
+```{r}
+sims_puntos <- map(1:50000, ~ simular_3_puntos())
+```
+
+Calculamos la ocurrencia del evento de interés:
+
+```{r}
+evento <- map_lgl(sims_puntos, ~ es_equilatero(.x))
+```
+
+Y al frecuencia relativa es:
+
+```{r}
+mean(evento)
+```
+
+¿Puedes resolver este problema contando los posibles triángulos, y cuáles 
+de ellos son equiláteros?
+
 
 
 
@@ -398,6 +553,7 @@ real es pensar en términos de probabilidad subjetiva.
 En la práctica, este tipo de enfoque se utiliza para poner probabilidades sobre
 cantidades o aspectos difíciles de medir directamente pero que son relativamente simples, 
 y luego se utilizan modelos y reglas de probabilidad para producir otras probabilidades de interés más complicadas.
+
 
 ## Probabilidad subjetiva y calibración frecuentista
 
