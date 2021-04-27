@@ -1,9 +1,23 @@
 # Probabilidad condicional e independencia
 
+```{r, message = FALSE, echo = FALSE, include = FALSE}
+knitr::opts_chunk$set(
+    comment = "#>",
+    collapse = TRUE,
+    fig.align = "center", 
+    error = FALSE,
+    cache = FALSE
+)
+ggplot2::theme_set(ggplot2::theme_light())
+library(tidyverse)
+library(patchwork)
+library(kableExtra)
+```
+
 Uno los conceptos centrales de la probabilidad es el de probabilidad condicional:
 
 1. Muchas veces queremos calcular probabilidades dada cierta información parcial: es decir,
-las probabilidades que queremos calcular son *condicionadas* a cierto tipo de información
+las probabilidades que queremos calcular son *condicionadas* a cierto tipo de información.
 2. La probabilidad condicional nos permite modelar con probabilidad sistemas relativamente
 complejos a partir de componentes simples.
 
@@ -39,7 +53,7 @@ es 5.
 
 ```{block2, type="comentario"}
 En un espacio de resultados equiprobables, si $E$ y $F$ son eventos, entonces
-$$P(E|F) = \frac{|E\cap F|}{|F|},$$
+$$P(E|F) = \frac{n(E\cap F)}{n(F)},$$
 es decir, dividimos el número de maneras en que pueden ocurrir $E$ y $F$ simultáneamente
 entre el número de maneras en que puede ocurrir $F$.
 ```
@@ -52,7 +66,8 @@ como si se tratara de una probabilidad usual.
 
 Supongamos que tiramos dos volados. Cuál es la probabilidad 
 condicional de que los dos
-volados sean sol dado que 1) El primer volado es sol? 2) Alguno de los dos volados es sol, 3) Los dos volados son águilas? 
+volados sean sol (evento $E$) dado que 1) El primer volado es sol? 
+2) Alguno de los dos volados es sol, 3) Los dos volados son águilas? 
 
 Hay 2 resultados donde el primer volado es sol (enuméralos), así que la primer 
 probabilidad es $P(E|F_1)=1/2$. Explica por qué la segunda probabilidad condicional
@@ -62,7 +77,7 @@ es igual a $P(E|F_2)=1/3$. ¿Cuánto vale $P(E|F_3)$?
 
 Supongamos que extraemos tres cartas al azar de una baraja de 52 cartas (13 son corazones).
 Nos muestran que la segunda y la tercera carta son corazones. ¿Cuál es la probabilidad
-condicional de que la tercera sea un corazón?
+condicional de que la primera sea un corazón?
 
 Solución: como resultados para las primeras tres cartas seleccionadas tenemos
 $(x_1,x_2,x_3)$. Nos interesan solamente los resultados $(x_1, corazon_1, corazon_2)$.
@@ -74,3 +89,361 @@ de calcular esta probabilidad condicional.
 
 ## Simulación y probabilidad condicional
 
+Una manera de aproximar probabilidades condicionales es simulando el experimento
+que nos interesa, y calculando frecuencias relativas solamente sobre
+la información que sabemos que ocurrió: es decir, filtramos las simulaciones
+escogiendo sólo las que son consistentes con la información dada.
+
+### Ejemplo: simulación tres cartas {-}
+
+```{r}
+baraja <- tibble(numero = 1:13) %>% 
+   crossing(tibble(figura = c("C", "D", "T", "P"))) %>% 
+   mutate(carta = paste(numero, figura))
+nrow(baraja)
+baraja
+```
+
+```{r}
+cartas <- baraja$carta
+exp_3_cartas <- function(cartas){
+   sample(cartas, 3) 
+}
+set.seed(132185)
+exp_3_cartas(cartas)
+```
+Simulamos el experimento
+
+```{r}
+sims <- map(1:20000, ~ exp_3_cartas(cartas))
+sims[1:5]
+```
+
+Sin más información, la probabilidad de corazón en
+la primera extracción es:
+
+```{r}
+sims %>% 
+   map_lgl(~ str_detect(.x[1], "C")) %>% 
+   mean()
+```
+Que debe estar alrededor de 1/4. Ahora condicionamos a que
+las cartas 2 y 3 son corazones:
+
+
+```{r}
+sims_F <- sims %>%
+   keep(~ str_detect(.x[2], "C") & str_detect(.x[3], "C"))
+length(sims_F)
+sims_F[1:5]
+```
+Y sobre estas simulaciones hacemos **el mismo cálculo de arriba**:
+
+```{r}
+sims_F  %>% 
+   map_lgl(~ str_detect(.x[1], "C")) %>% 
+   mean()
+```
+Esto nos da una aproximación de $P(E|F)$. Nótese que si $F$ es un evento
+con probabilidad baja, entonces será necesario correr más veces el experimento,
+pues el número de veces que ocurre $F$ es relativamente bajo.
+
+Podemos definir también la probabilidad condicional en general, para
+cualquier probabilidad $P$ no necesariamente resultante de un modelo equiprobable:
+
+```{block2, type="comentario"}
+La **probabilidad condicional* del evento $E$ dado que ocurrió el evento $F$
+   se define como
+$$P(E|F) = \frac{P(E y F)}{P(F)}$$
+```
+
+
+## Regla de la multiplicación
+
+A veces nos interesa calcular la probabilidad de que dos eventos ocurran,
+y conocemos $P(F)$ y $P(E|F)$. En ese caso podemos usar la definición de
+probabilidad condicional para escribir al *regla del producto*:
+$$P(EF) = P(F)P(E|F)$$
+
+Por ejemplo, si queremos calcular la probablidad de extraer dos corazones
+de una baraja usual, tenemos que $P(C_1) = 13/52 = 1/4$. $P(C_2|C_1)$ es fácil
+de calcular, pues si la primera carta que sacamos es un corazón, entonces
+para la segunda extracción hay 51 cartas, de las cuales 12 son corazones,
+de forma que $P(C_2|C_1) = 12/51$. Usando la regla del producto, quedamos con
+$$P(C_1C_2) = P(C_1)P(C_2|C_1) = \frac{13}{52}\frac{12}{51} \approx 0.0588$$
+
+Podemos generalizar esto a
+
+```{block2, type="comentario"}
+**Regla del producto**
+   
+$$P(E_1E_2E_3\cdots E_n) = P(E_1)P(E_2|E_1)P(E_3|E_1E_2)\cdots P(E_n|E_1\cdots E_{n-1}$$
+```
+
+### Ejercicio {-} 
+Se divide al azar una baraja de 52 de cartas en 4 pilas
+iguales. Calcula la probabilidad de cada pila tenga exactamente un as.
+
+Podemos hacer el evento $E_1$ que el as de corazones y el de diamantes están
+en diferentes pilas, $E_2$ el evento de que el as de corazones, el de diamantes,
+y el de tréboles están en diferentes pilas, y finalmente
+$E_3$ el evento de que todos los ases están en diferentes pilas. Nótese
+que buscamos la probabilidad $P(E_3)$, pero será más fácil si escribimos:
+
+$$P(E_3) = P(E_3E_2E_1) = P(E_1)P(E_2|E_1)P(E_3|E_1E_2)$$
+
+Primero, el as de corazones está en alguna de las pilas. La probabilidad
+de el as de diamantes no esté en esa pila es $P(E_1) = 1 - 12/51 = 39/51$ (¿por qué?),
+pues la pila que tiene el as de corazones tiene otras 12 cartas de las 51 disponibles. La probabilidad de que el as de diamantes sea una de esas 12 cartas es 
+entonces 12/51.
+
+Si se cumple $E_1$, entonces el as de corazones y de diamantes están en pilas
+distintas. Entonces la probabilidad de que el as de tréboles caiga en una de esas
+dos pilas es $24/50$, así que
+$$P(E_2|E_1) = 1 -24/50 = 25/50$$
+
+Finalmente, si el as de corazones, diamantes y tréboles están en distintas pilas,
+entonces la probabilidad de que el de espadas caiga en la una de esas pilas es
+$36/49$, de modo que
+$$P(E_3|E_2E_1) = 1 - 36/49 = 13/49$$.
+
+Usando la reglal producto,
+$$P(E_1E_2E_3) = \frac{39(26)(13)}{51(50)(49)} \approx 0.105$$
+
+## Nota: falacias probabilísticas
+
+Una de las razones por las que es importante usar la teoría de probabilidad
+para manipular probabilidades es que
+las personas, naturalmente, tienden a hacer "cálculos mentales 
+probabilísticos" incorrectos, lo cual a fin de cuentas lleva a decisiones mal informadas. Existe amplia
+evidencia de esto, ver por ejemplo el trabajo de: [Kahneman y Tversky](https://www.econlib.org/library/Enc/bios/Kahneman.html)
+
+  *"Before their work, economists had gotten far in their analyses of decision making under uncertainty by assuming that people correctly estimate probabilities of various outcomes or, at least, do not estimate these probabilities in a biased way [...]. But Kahneman and Tversky found that this is not true: the vast majority of people misestimate probabilities in predictable ways."*
+
+Ahora podemos descutir una de ellas, la falacia de conjunción. Consideremos
+la siguiente pregunta:
+
+- Linda is 31 years old, single, outspoken, and very bright. She majored in philosophy. As a student, she was deeply concerned with issues of discrimination and social justice, and also participated in anti-nuclear demonstrations. 
+
+¿Qué es más probable?
+  
+1. Linda is a bank teller.
+2. Linda is a bank teller and is active in the feminist movement.
+
+¿Qué crees que tiende a escoger la mayoria de las personas como la más
+probable? ¿Qué regla de probabilidad puedes usar para demostrar que esto
+es una falacia?
+
+## Regla de probablilidad total
+
+Una regla que usaremos varias veces es la regla de probabilidad total, que
+establece que 
+
+$$P(E) = P(E|F)P(F) + P(E|F^c)P(F^c)$$
+donde el evento $F^c$ significa que $F$ **no** ocurrió.
+
+Esta regla es útil en muchos casos para calcular probabilidades de un evento
+dependiendo de la ocurrencia o no de otro.
+
+### Ejemplo {-}
+
+Sacamos dos cartas de una bajara de 52 cartas. Vimos un
+ejemplo donde queríamos calcular la probabilidad de $N_2=$ 
+la segunda carta que sacamos es negra. Argumentamos usando espacio
+equiprobables que $P(N_2) = 0.5$.
+
+Si $N_1 =$ la primera carta es negra, entonces
+la ley de probabilidad total explica por qué pasa esto tomando en cuenta
+el resultado de la primera extracción:
+
+- Tenemos que $P(N_2|N_1) = 25/51$ y $P(N_1) = 1/2$
+- Además, $P(N_2|N_1^c) = 26/51$ y $P(N_1^c) = 1/2,$
+
+de forma que
+
+$$P(N_2) = (25/51)(1/2) + (26/51)(1/2) = \frac{(25 + 26)}{51(2)} = /2$$
+
+La ley de probabilidades totales consiste de las reglas de ponderación usuales que conocemos.
+
+### Ejemplo {-}
+
+En un país hay 20% de adultos de 20 años o menos, y  80% de adultos de 21 años o
+más.
+Entre los adultos de 20 años o menos, el 90% solo usa plataformas digitales
+para ver televisión. Entre los adultos de 21 años o más, el 15% solo usa plataformas
+digitales para ver televisión. Si tomamos un adulto al azar de esta población,
+¿cuál es la probabilidad de que solo use digital para ver TV?
+
+La respuesta es 
+
+$$ 0.90(0.20) + 0.15(0.80) = 0.3$$
+
+## Ejercicio: dados y monedas
+
+Supongamos que tiramos un dado. Tiramos tantos volados como el número que salió en la
+tirada de dado, y registramos el número de soles. ¿Cuál es la probabilidad de que
+obtengamos cero soles?
+
+Sea $X=$ número que obtuvimos en la tirada de dado, y sea
+$Y=$ número de soles obtenidos.
+
+Calcular directamente $P(Y=0)$ puede hacerse de manera simple con la ley de probabilidad
+total, pues
+
+- $P(Y=0|X=1) = 1/2$, prob de ningún sol en 1 volado
+- $P(Y=0|X = 2) = 1/4$ prob de ningún sol en dos volados (suponiendo independencia de los volados)
+- $P(Y=0|X=3) = 1/8$, prob de ningún sol en tres volados.
+
+y así sucesivamente. Como $P(X=i)=1/6$ para cualquier número del uno al seis, 
+la probabilidad $P(Y=0)$, usando probabilidad total, es
+
+$$(1/6)(1/2) + (1/6)(1/2)^2 +(1/6)(1/2)^3 +(1/6)(1/2)^4 +(1/6)(1/2)^5 +(1/6)(1/2)^6$$
+
+que es igual a
+
+```{r}
+probs_x <- rep(1/6, 6)
+probs_y_x = 0.5^(1:6)
+sum(probs_y_x * probs_x)
+```
+
+Checa usando simulación. 
+
+## Ejercicio: dados y monedas (simulación)
+
+Este es un experimento más interesante para simular:
+
+```{r}
+simular_soles <- function(){
+   dado <- sample(1:6, 1)
+   soles <- sample(c("sol", "águila"), dado, replace = TRUE)
+   num_soles = sum(as.numeric(soles == "sol"))
+   num_soles
+}
+set.seed(82332)
+simular_soles()
+```
+Si hacemos 10 mil simulaciones:
+
+```{r}
+sims <- map_dbl(1:10000, ~ simular_soles())
+qplot(sims)
+```
+
+La frecuencia relativa de cero soles es:
+
+```{r}
+sum(sims==0) / length(sims)
+```
+Calcula también la probabilidad de obtener 2 soles o más
+en este experimento (puedes usar la simulación).
+
+
+
+## Regla de Bayes 
+
+La regla de Bayes es una fórmula que se utiliza para invertir probabilidades
+condicionales:
+
+$$P(E|F) = \frac{P(F|E)P(E)}{P(F)},$$
+
+que es una consecuencia fácil de la definición de probabilidad condicional. Es útil
+conocerla porque facilita resolver varios problemas de probabilidad que en un
+principio parecen difíciles.
+
+### Ejemplo {-}
+
+Supongamos que tenemos una baraja de 8 cartas, 4 negras y 4 blancas. Extraemos sucesivamente dos cartas a azar.
+Sea $N_1=$ la primera carta es negra y $B_2=$ la segunda carta es blanca. ¿Cuál es la probabilidad condicional de que la primera carta
+haya sido negra si nos dicen que la segunda fue blanca?
+
+Aunque ya resolvimos problemas como este, parece confuso en un principio.
+Sin embargo, podemos calcular:
+$$P(N_1|B_2) = \frac{P(B_2|N_1)P(N_1)}{P(B_2)}$$
+Sabemos que $P(B_2|N_1) = 4/7$, y que $P(N_1)=1/2$ y $P(B_2) = 1/2$, de modo que
+
+$$P(N_1|B_2) = 4/7 > 1/2$$
+
+es decir, si sabemos que la segunda carta fue blanca, eso hace más probable que
+la primera carta haya sido negra.
+
+### Ejemplo (parte 1) {-}
+
+Supongamos que una aseguradora cree que hay dos tipos de personas:
+unos con más riesgo de tener accidentes y otros con menos riesgo. 
+Los datos muestran que una persona con riesgo alto tendrá un accidente en algún
+momento del año con probabilidad 0.04, y esta probabilidad baja a 0.01 para
+una persona de riesgo bajo. Si 10% de la población tiene riesgo alto, ¿cuál es 
+la probabilidad de que un asegurado nuevo tenga un accidente un año después de
+comprar su póliza? (Nota: no sabemos si la persona nueva es de riesgo alto o bajo).
+
+Puedes resolver son simulación, o usar la ley de probabilidad total. Si $A$ 
+es el evento de tener un accidente, $R_A$ es el evento de que la persona
+es de riesgo alto y $R_B$ es el evento que la persona es de riesgo bajo, entonces
+
+$$P(A) = P(A|R_A)P(R_A) + P(A|R_B)P(R_B)$$
+
+pues $R_A$ y $R_B$ cubren todas las posibilidades. Entonces
+
+$$P(A) = 0.04(0.10) + (0.01)(0.90) = 0.004 + 0.009 = 0.013$$
+Es decir, su probabilidad es de 1.3% de tener una accidente en el primer año.
+
+### Ejemplo (parte 2) {-}
+
+Ahora vemos que un cliente tuvo un accidente en su primer año. ¿Cuál es
+la probabilidad de que sea un cliente de riesgo alto?
+
+La pregunta es de probabilidad condicional, porque ya tenemos información. Queremos
+calcular
+
+$$P(R_A| A)$$
+
+Si usamos la regla de Bayes obtenemos
+
+$$P(R_A|A)= \frac{P(A|R_A)P(R_A)}{P(A)}$$
+
+Sustituimos los datos que tenemos
+
+$$P(R_A|A)= \frac{0.04(0.10)}{P(A)}$$
+y $P(A)$ que calculamos en el ejercicio anterior:
+
+$$P(R_A|A)= \frac{0.04(0.10)}{0.013} \approx 0.3077$$
+
+De manera que al principio la probabilidad no condicionada de ser de alto
+riesgo era de 10%, y cuando tiene un accidente esta probabilidad se triplica.
+
+### Ejemplo {-}
+
+Supongamos que en un concurso de TV tenemos tres puertas y debemos escoger una.
+Atrás de una de ellas hay un premio, y no hay nada detrás de las otras dos.
+Escogemos una de las puertas.
+
+Ahora el conductor (que sabe dónde está el premio), abre una puerta vacía, y nos
+pregunta si queremos cambiar o no de puerta. ¿Cuál es la mejor estrategia, cambiar
+o quedarnos con la que escogimos al principio?
+
+Veamos la estrategia de quedarnos con la puerta que escogimos. Sin perdida de 
+generalidad, suponemos que escogemos la puerta 1.
+
+Ahora observamos que el conductor abre la puerta 2.
+
+Sea $E_1=$ el premio está en la puerta 1, y $A_2=$ el conductor abre la puerta 2, donde
+no hay premio. Por la regla de bayes:
+
+$$P(E_1 | A_2) = \frac{P(A_2 | E_1) P(E_1)}{P(A_2)}$$
+
+Sabemos que $P(E_1)= 1/3$, y que $P(A_2|E_1)=1/2$ (pues el conductor pudo abrir la puerta 2 o 3). Adicionalmente 
+
+$$P(A_2) = P(A_2|E_1)P(E_1) + P(A_2|E_1^c)P(E_1^c) = (1/2)(1/3) + (1/2) (2/3) = 1/2$$
+
+pues $P(A_2|E_1^c) = 1/2$, es decir, si el premio no está en la puerta 1, la probabilidad
+de que abrir la puerta 2 es la probabilidad de que el premio esté en la puerta 2 dado
+que no está en la puerta 1
+
+Sustituyendo,
+
+$$P(E_1 | A_2) = \frac{(1/2)(1/3)}{1/2} = 1/3$$
+
+Asi que si cambiamos, la probabilidad de ganar es de 2/3.
+
+Simula para verificar tus resultados.
