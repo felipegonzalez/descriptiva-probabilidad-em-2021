@@ -1,0 +1,69 @@
+# Otros modelos continuos
+
+Aquí recopilaremos otros modelos continuos que aparecen y son populares
+en aplicaciones
+
+## La distribución exponencial y gamma
+
+Otras densidades teóricas útiles para variables continuas son la exponencial y
+la gamma, por ejemplo cuando los datos que buscamos modelar no tienen un distribución
+simétrica
+
+La distribución exponencial resulta de la siguiente consideración:
+
+- Supongamos que $X$ es el tiempo de espera para que suceda un evento.
+- Supondremos que si ya hemos esperado un tiempo t (es decir, sucede el evento
+$X>t$), entonces el tiempo de espera restante tiene la misma distribución exponencial.
+- Decimos en este caso que el tiempo de espera no tiene memoria.
+
+En la realidad, algunos tiempos de espera se comportan aproximadamente de esa manera,
+y en otros, conforme esperamos más tiempo, el tiempo de espera restante tiende a ser más grande (por ejemplo supervivencia de pacientes en algunos casos), y en otros, el tiempo de espera tiende a ser más chico (por ejemplo, fallas en algunos tipos de componentes).
+
+Bajo las hipótesis de tiempo de espera sin memoria, tenemos que
+
+$$P(X>s+t|X>t) = P(X>s).$$
+Ahora, el lado izquierdo por definición es:
+
+$$\frac{P(X>s+t)}{P(X>t)}$$
+De modo que buscamos una probabilidad que satisfaga:
+
+$$P(X>s+t) = P(X>s)P(X>t)$$
+Sea $S(t) = P(X>t)$. Entonces esta ecuación establece que
+$$S(s+t) = S(s)S(t),$$ 
+y la única función razonable 
+que satisface esto es la exponencial, así que esto implica que
+$$S(t) = e^{-\lambda t}$$
+para alguna $\lambda>0$. ¿Cómo es la densidad? Nótese que
+$$S(t) = e^{-\lambda t} = \int_t^\infty f(t)\,dt$$
+y derivando de ambos lados obtenemos
+
+$$f(t) = \lambda e^{-\lambda t}.$$
+A esta densidad le llamamos la *exponencial* con tasa $\lambda$. Veamos
+cómo se ven simulaciones de este tipo de variables aleatorias
+
+```{r}
+x = rexp(1000, rate = 1)
+tibble(x = x) %>% 
+    ggplot(aes(x=x)) + geom_histogram(binwidth = 0.25, boundary = 0)
+```
+```{block2, type="comentario"}
+**Distribución exponencial**
+    Si $X$ tiene distribución exponencial con tasa $\lambda >0$, 
+
+- Su densidad
+es $f(x) = \lambda e^{-lambda x}$
+- Su media es $\frac{1}{\lambda}$ y su varianza es $\frac{1}{\lambda^2}$
+- Su mediana es  $\sqrt{2}/\lambda$
+
+La distribución exponencial tiene falta de memoria: si $X$ es un tiempo de espera,
+entonces el tiempo restante de espera después de haber esperado un tiempo $t$ se
+distribuye exponencial con el mismo parámetro $\lambda$.
+```
+
+Una generalización de la distribución exponencial es la distribución 
+Gamma con parámetros $(\alpha, \lambda)$,
+cuya densidad está dada por:
+
+$$f(x) = K(\lambda, \alpha) x^{\alpha -1} e^{-\lambda x}$$
+donde $K(\lambda, \alpha)$ es una constante de normalización. Ve [aqui](https://en.wikipedia.org/wiki/Gamma_distribution) para ver más acerca
+de distribución gamma.
