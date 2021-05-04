@@ -1,0 +1,592 @@
+# Modelos probabilísticos para variables continuas
+
+```{r, message = FALSE, echo = FALSE, include = FALSE}
+knitr::opts_chunk$set(
+    comment = "#>",
+    collapse = TRUE,
+    fig.align = "center", 
+    error = FALSE,
+    cache = FALSE
+)
+ggplot2::theme_set(ggplot2::theme_light())
+library(tidyverse)
+library(patchwork)
+library(kableExtra)
+```
+
+En la parte anterior consideramos resultados numéricos de experimentos aleatorios,
+por ejemplo, cuando $X$ el resultado de una tirada de dado. En este caso, un modelo
+de probabilidad para $X$ asigna una probabilidad dada a cada posible resultado,
+por ejemplo
+$$P(X=1) = 1/6$$
+e igualmente $P(X=2)=\cdots = P(X=6) = 1/6$. En muchos casos, la cantidad $X$
+que nos interesa puede tomar valores numéricos arbitrarios, y en este esquema
+no está claro cómo asignaríamos probabilidades.
+
+### Ejemplo: ruleta justa
+
+Supongamos que giramos una ruleta con una flecha indicadora, y el resultado
+del experimento es el ángulo en grados final de la flecha. ¿Cómo podríamos poner,
+por ejemplo $P(X= 92)$? ¿Qué pasa si podemos medir con resultados
+con varios decimales de exactitud?
+
+
+
+[Ruleta](figuras/ruleta.jpeg)
+
+En estos casos, en lugar de considerar eventos de la forma $X=a$, podemos
+considerar eventos resultantes de la forma $a\leq X \leq b$, es decir,
+buscamos asignar probabilidades a eventos de la forma
+$$P(X \in [a,b]).$$
+Por ejemplo, si $Y$ es la estatura adulta de una persona que acaba de nacer,
+podríamos preguntarnos cómo asignar probabilidades a eventos como
+$$P(Y\in [150,170]) = P(150\leq Y \leq 170),$$
+y quizá también otros como
+$$P(Y < 180).$$
+
+
+## Modelo equiprobable o uniforme
+
+El modelos más simple para una medición continua $X$ es el modelo uniforme. Para 
+nuestra ruleta, por ejemplo, $X$ puede tomar valores en el intervalo $[0, 360)$.
+Si la ruleta es justa, entonces la probabilidad de que
+la flecha caiga en cualquier sector $[a,b]$ debe ser igual. Una manera
+de lograr esto ues sar como probabilidad la proporción de 
+longitud $[a,b]$ con respecto al total de $[0, 360)$:
+
+$P(X\in [a,b]) = \frac{b-a}{360}.$
+
+- Discute por qué esta asignación de probabilidades satisface las tres
+reglas básicas de probabilidad (axiomas) que presentamos anteriormente.
+- Este es el equivalente continuos para espacios equiprobables con un número 
+finito de resultados.
+
+```{block2, type="comentario"}
+Supongamos que una variable aleatoria puede tomar valores en el intervalo
+$[L,U]$. La variable aleatoria es **uniforme** en $[L,U]$ cuando
+
+$$P(X \in [a,b]) = \frac{b-a}{L-U}$$
+    
+```
+
+
+
+
+### Ejemplo: ruleta sesgada
+
+Ahora supongamos que nuestra ruleta no está del todo balanceada. Por ejemplo,
+podría ser estuviera colgada en una pared, y al girar la flecha es un poco
+más probable que la flecha apunte hacia el piso en lugar de hacia el cielo. 
+
+En este caso, si la dirección hacia arriba en 90 grados y hacia abajo es
+270 grados, quisiéramos por ejemplo que
+$$P(260 < X <280) < P(80 < X < 100)$$
+Y nótese que debe ser posible asignar probabilidades a cualquier sector
+de la ruleta con el nuevo modelo que propongamos. ¿Cómo podríamos modificar nuestra asignación de probabilidades?
+
+Una de las maneras más fáciles es pensando que nuestra probabilidad 
+se obtiene integrando una funcion constante:
+
+- Si $[a,b]$ es un sector de la ruleta con $a<b$, podríamos poner
+$$P(X\in [a,b]) = \int_a^b \frac{1}{360} \,dx = \frac{b-a}{360}$$
+De forma que si $f(x)= 1/360$ para valores $0 \leq x < 360$, nuestra probabilidad
+se escribe como la integral
+
+$$P(X\in [a,b]) = \int_a^b f(x) \,dx $$
+Ahora la idea es la siguiente:
+
+- Usamos la fórmula anterior, pero modificamos o perturbamos
+la función $f(x) = 1/360$ para que
+$f$ sea un poco más alta alrededor de 270 grados (abajo), 
+y un poco más baja alrededor de 90 grados (arriba).
+- Lo único que necesitamos es que $f(x)$ no puede tomar valores negativos (por que
+si no obtendríamos probabilidades negativas en algunos sectores), y la integral
+sobre la ruleta completa debe ser uno:
+
+$$P(X\in [0, 360]) = \int_0^{360} f(x)\,dx = 1$$
+Podríamos utilizar por ejemplo:
+
+```{r, fig.width =5, fig.height=2.5}
+f_dens <- function(x){
+    x_rad <- 2 * pi * x / 360
+    (1/360) +  0.0002 * cos(x_rad - 3 * pi  / 2)
+}
+graf_1_tbl <- tibble(angulo = seq(0, 360, 1), tipo = "uniforme",
+                   f = 1 / 360) 
+graf_2_tbl <- tibble(angulo = seq(0, 360, 1), tipo = "colgada") %>% 
+    mutate(f = f_dens(angulo))
+graf_tbl <- bind_rows(graf_1_tbl, graf_2_tbl)
+ggplot(graf_tbl, aes(x = angulo, y = f, colour = tipo)) +
+    geom_line() +
+    ylim(c(0, 0.003)) + facet_wrap(~tipo, nrow = 1)
+```
+El cálculo se hace ahora con área bajo la curva. Para calcular 
+la probabilidad
+$$P(X\in [50, 130]),$$
+integramos la función $f$ correspondiente, que corresponde a calcular 
+área bajo la curva:
+
+```{r, fig.width =5, fig.height=2.5}
+ggplot(graf_tbl, aes(x = angulo, y = f, colour = tipo)) +
+    geom_line() +
+    ylim(c(0, 0.003)) + facet_wrap(~tipo, nrow = 1) +
+    geom_area(aes(x = ifelse(angulo > 50 & angulo < 130, angulo, 0)), 
+              fill="salmon", alpha = 0.5)
+```
+Y ahora vemos que para la versión perturbada, más de la probabilidad se
+concentra alrededor de 270 grados que alrededor de 90. Por las propiedades
+de la integral, todas las propiedades usuales de probabilidad se cumplen.
+
+## Funciones de densidad
+
+Cuando trabajamos con mediciones de tipo continuo, es más conveniente definir
+asignaciones de probabilidad utilizando *funciones de densidad de probabilidad*:
+
+```{block2, type="comentario"}
+Una función $f(x)$ no negativa cuya integral es igual a 1 es una función
+de densidad de probabilidad. Las probabilidades asociadas se calculan integrando:
+
+$$P(X\in [a,b]) = \int_a^b f(x)\,dx$$
+
+En este caso decimos que $f$ es la función de densidad de probabilidad asociada
+a la variable aleatoria $X$. A este tipo de variables aleatorias les llamamos
+*continuas*.
+```
+
+
+## Ejemplo: densidad triangular
+
+Supongamos que tenemos una variable aleatoria que tiene mediana 2, y puede
+tomar valores entre 0 y 4. Podríamos definir una densidad como sigue: Si 
+$x$ está entre 0 y 2, entonces
+
+$$f(x) = \frac{x}{4}$$
+y si $x$ está entre 2 y 4, entonces
+$$f(x) = 1 - \frac{x}{4}$$
+```{r, fig.width=4, fig.height=3}
+dens_triangular <- function(x){
+    (x > 0) * (x < 4) * ifelse(x < 2, x/4, 1 - x/4)
+}
+triangular_tbl <- tibble(x = seq(-1, 5, 0.001)) %>% 
+    mutate(f = dens_triangular(x)) 
+ggplot(triangular_tbl, aes(x = x, y = f)) +
+    geom_line()
+```
+
+### Ejemplo {-}
+Supongamos que una variable $X$ tiene mediana 2 y rango de 0 a 4, con densidad
+triangular. ¿Cuál es la probabilidad $P(X>1)$? 
+
+Solución: Por reglas usuales de probabilidad,
+$P(X>1) = P(1<X<2) + P(X\geq2)$. Tenemos que $P(X\geq 2) = 0.5$. Ahora usamos
+la fórmula de la densidad triangular para obtener
+$$P(1<X<2) = \int_{1}^{2} f(x)\,dx = \int_1^2 \frac{x}{4}\,dx = 
+\left [\frac{x^2}{8}\right ]_1^2 = 1/2 - 1/8 = 3/8 = 0.375$$
+
+de modo que
+
+$$P(X<1) = 0.375 +0.500 = 0.875$$
+
+En general, podemos dar una fórmula para una densidad triangular en 
+el intervalo $[A,B]$ con mediana en $(A + B)/2$. ¿Cómo sería la fórmula?
+
+
+## Cuantiles de variables aleatorias
+
+Antes vimos la definición de cuantiles para datos numéricos. Podemos definirlos
+también para variables aleatorias numéricas:
+
+```{block2, type="comentario"}
+Sea $p\in (0,1)$. El cuantil-$p$ de la variable $X$ con función de
+densidad $f(x)$ es el valor $x(p)$ tal que
+
+$$\int_{-\infty}^{x(p)} f(x)\,dx = p$$
+    
+```
+
+Observación: nótese que usamos como límite inferior $-\infty$ para indicar que
+integramos $f$ sobre toda la densidad que esté a la izquierda de $x(p)$.
+
+
+
+
+### Ejemplo: densidad triangular {-}
+
+Supongamos que $X$ tiene la densidad triangular mostrada arriba. Calcula el
+cuartil inferior y superior (es decir, los cuantiles 0.25 y 0.75). Para el cuartil
+superior, por ejemplo, buscamos al $x(0.75)$ de la siguiente gráfica:
+
+```{r}
+source("R/triangular.R")
+ggplot(triangular_tbl, aes(x = x, y = f)) +
+        geom_line() +
+    geom_area(aes(x = ifelse(x > 0 & x < qtri(0.75, 0, 4), x, 0)), 
+              fill="salmon", alpha = 0.5) +
+    ylim(c(0, 0.7)) +
+    annotate("text", x = qtri(0.75, 0, 4), y = 0.03, label = "x(0.75)") +
+    annotate("point", x = qtri(0.75, 0, 4), y = 0.0) 
+```
+
+
+Comenzaremos por el cuartil inferior. Buscamos una $x(0.25)$ tal que
+$$\int_0^{x(0.25)} f(x)\,dx = 0.25$$
+Sabemos que $x(0.25)< 2$, pues la integral hasta 2 es 0.5, así que
+
+$$\int_0^{x(0.25)} f(x)\,dx = \int_0^{x(0.25)} x/4 \,dx = \left [ x^2/8\right]_0^{x(0.25)} = (x(0.25))^2/8$$
+Si queremos que este valor sea igual a 0.25, entonces despejando obtenemos
+$$x(0.25) = \sqrt{0.25(8)} = \sqrt{2}\approx = 1.4142$$
+Ahora podríamos calcular la otra integral, pero por simetría podemos concluir 
+que
+$$x(0.75) = 2 + (2 - 1.4142) \approx 2.5858$$
+y concluimos que los cuartiles inferiores y superiores son aproximadamente 1.41 y 2.59
+
+### Ejercicio: densidad uniforme {-}
+Calcula la mediana, y los percentiles 0.10 y 0.90 de una variable uniforme en $[0, 10]$.
+
+
+## Comparando cuantiles teóricos y empíricos
+
+Los cuantiles que vimos en la parte de descriptivos para datos numéricos se
+llaman usualmente *cuantiles empíricos*. Estos cuantiles podemos compararlos con
+cuantiles teóricos para ver qué tan similares son, y si el modelo teórico describe
+adecuadamente los datos.
+
+### Ejemplo: distribución uniforme
+
+Simularemos 500 datos uniformes en $[0, 10]$:
+
+```{r}
+x_sim_u <- runif(500, 0, 10)
+```
+
+Podríamos calcular algunos cuantiles empíricos:
+
+```{r}
+quantile(x_sim_u, c(0.10, 0.50, 0.90))
+```
+Por el ejercicio anterior sabemos cuáles son los cuantiles teóricos correspondientes
+a una uniforme en $[0,10]$. Podemos calcularlos también como sigue:
+
+```{r}
+qunif(c(0.10, 0.5, 0.90), 0, 10)
+```
+Y vemos que son muy similares los cuantiles empíricos y teóricos. Una mejor
+manera de considerar esta similitud es graficando *todos* los cuantiles
+empíricos y comparándolos con los teóricos:
+
+```{r}
+ggplot(tibble(x = x_sim_u), aes(sample = x)) +
+    geom_abline(colour = "red") +
+    geom_qq(distribution = stats::qunif, dparams = list(min = 0, max = 10)) +
+    xlab("Cuantiles Teóricos U(0,10)") + ylab("Cuantiles de datos")
+```
+Y vemos que la forma de las dos distribuciones es muy similar: los cuantiles
+empíricos son muy similares a los teóricos. Existen algunas fluctuaciones debidas
+al muestreo aleatorio.
+
+
+### Ejemplo: distribución triangular
+
+Repetimos para la distribución triangular. Los cuantiles que calculamos arriba son:
+
+```{r}
+qtri(c(0.25, 0.75), a = 0, b = 4)
+```
+```{r}
+x_sim_tri <- rtri(500, 0, 4)
+ggplot(tibble(x = x_sim_tri), aes(sample = x)) +
+    geom_abline(colour = "red") +
+    geom_qq(distribution = qtri, dparams = list(a = 0, b = 4)) +
+    xlab("Cuantiles Teóricos triangular(0,4)") + ylab("Cuantiles de datos")
+```
+Nótese que otra vez, los cuantiles teóricos se alinean bien con los teóricos.
+
+## Histogramas y densidades
+
+Para el análisis de datos usual, las gráficas cuantil-cuantil tienden a ser
+útiles para entender si unos datos se comportan según alguna densidad teórica.
+Sin embargo, muchas veces se usan histogramas, como en las siguientes gráficas:
+
+```{r}
+hist_1 <- ggplot(tibble(x = x_sim_u),
+                 aes(x = x)) +
+    geom_histogram(aes(y = ..density..), binwidth = 1, boundary = 0) +
+    geom_line(data = tibble(x = seq(0, 10, 0.01)) %>% 
+                  mutate(f = dunif(x, 0, 10)),
+              aes(x = x, y = f), colour = "red")
+hist_2 <- ggplot(tibble(x = x_sim_tri),
+                 aes(x = x)) +
+    geom_histogram(aes(y = ..density..), binwidth = 0.25, boundary = 0) +
+    geom_line(data = tibble(x = seq(0, 4, 0.01)) %>% 
+                  mutate(f = dtri(x, 0, 4)),
+              aes(x = x, y = f), colour = "red")
+hist_1 + hist_2
+```
+
+Nótese la escala vertical de estos histogramas, que no es simplemente el 
+conteo de casos que caen en cada intervalo del histograma. Para poder comparar
+los conteos con las densidades correspondientes, es necesario observar lo siguiente:
+
+Si $I = [a,b]$ es un intervalo del histograma, según la densidad (teórica), la probabilidad
+de que un dato $x$ caiga en $I$ es 
+$$P(x\in I) = \int_{a}^b f(x)\,dx \approx f(a) (b-a)$$
+La última aproximación se debe a que en un intervalo chico $[a,b]$, el área
+bajo la curva de $f(x)$ es aproximadamente igual a la base (el ancho del intervalo)
+por la altura en un punto de la curva ($f(a)$, aunque también podríamos usar
+$f(\frac{a+b}{2})$ por ejemplo).
+
+Si tenemos $n$ observaciones, esperamos entonces que caigan $nP(X\in I)$ en 
+el intervalo $I$, de forma que si $n([a,b])$ es el número de observaciones que caen en
+$I = [a,b]$, esperamos
+$$n([a,b]) \approx f(a)(b-a),$$
+y despejando obtenemos
+$$f(a)\approx \frac{n([a, b])}{b-a}.$$
+Esto implica que para aproximar la densidad, es necesario dividir los conteos
+entre el ancho de los intervalos correspondientes, y de ahí la escala vertical de
+las gráficas de arriba.
+
+**Observación**: las gráficas de cuantiles son generalmente más prácticas para
+evaluar el ajuste a un modelo teórico, aunque son menos comunes.
+
+## Más descriptivos: media y desviación estándar
+
+Podemos utilizar cuantiles para describir modelos teóricos y también conjuntos de datos (por ejemplo, mediana para centralidad y diferencia entre cuantiles 0.9 y 0.10 para dispersión),
+y funcionan bien en general. Sin embargo, para modelos teóricos y conjuntos de datos particulares muchas veces es más conveniente usar medidas como la media y desviación estándar. 
+
+### Media teórica y empírica
+
+Sabemos que la media de un conjunto de datos $x_1,x_2,\ldots,x_n$ está dada por
+
+$$\bar{x} = \frac{x_1 + x_2 + \cdots x_n}{n}.$$
+Ahora consideremos qué pasa con esta cantidad cuando las $x_i's$ son observaciones
+independientes de una distribución con densidad teórica $f(x)$. Utilizaremos
+simulaciones de la distribución triangular que vimos arriba
+
+
+
+```{r, fig.width =5, fig.height = 3}
+datos <- tibble(x = rtri(5000, 0, 4))
+ggplot(datos, aes(x = x)) + stat_bin(breaks = seq(0, 4, 0.25))
+```
+
+Podemos aproximar la media de estos datos 
+promediando los valores iniciales de los
+intervalos de corte ponderado por el número de casos. Lo hacemos así:
+
+```{r}
+particion <- seq(0, 4, 0.25)
+iniciales <- head(particion, -1) # quitar último
+agrupados_cubeta <- datos %>% 
+  mutate(inicial = cut(x, breaks = particion, labels = iniciales)) %>%  
+  mutate(inicial = as.numeric(as.character(inicial))) %>% 
+  group_by(inicial) %>%
+  count() %>% 
+  ungroup() 
+agrupados_cubeta
+```
+
+Y calculamos la aproximación a la media como sigue:
+
+```{r}
+agrupados_cubeta %>% 
+  summarise(media_aprox = sum(inicial * n) / sum(n))
+```
+
+Apliquemos esta idea cuando tenemos una densidad $f(x)$. Dividimos el rango
+de la densidad en cubetas, y aproximamos la densidad por rangos, por ejemplo:
+
+```{r}
+particion <- seq(0, 4, 0.25)
+valor <- dtri(particion, 0, 4)
+approx_tbl <- tibble(x = particion, densidad = valor)
+densidad_tri <- tibble(x = seq(0, 4, 0.01)) %>% 
+  mutate(densidad = dtri(x, 0, 4))
+ggplot(densidad_tri) + 
+  ylab('f(x)') + 
+  geom_line(aes(x = x, y= densidad), alpha = 0.8) +
+  geom_step(data = approx_tbl, aes(x = x, y = densidad), colour = "red") +
+  theme_minimal() 
+```
+
+Y repetimos el mismo proceso: ponderamos los valores iniciales por la
+altura de la densidad:
+
+```{r}
+approx_tbl %>% 
+  summarise(media_approx = sum(x * densidad) / sum(densidad))
+```
+
+Y esta es una aproximación a la media de esta distribución.
+
+Nótese que la cantidad que estamos calculando es
+
+$$\sum_i x_i f(x_i) \Delta$$
+
+donde $\Delta$ es igual a
+
+```{r}
+approx_tbl %>% summarise(suma_densidad = 1 / sum(densidad))
+```
+
+que es el ancho del intervalo de las particiones. Recordamos por cálculo
+que esta es una la aproximación a la siguiente integral:
+
+$$\sum_i x_i f(x_i) \Delta \approx  \int xf(x)$$
+
+De modo que para pasar de media de los datos $\bar{x}$ a la media
+de $\mu_f$ de una distribución la equivalencia es:
+
+$$
+\bar{x} = \frac{1}{n}\sum x_i   \longleftrightarrow \int xf(x)  = \mu
+$$
+donde
+
+- Usamos la densidad en lugar de frecuencias relativas para ponderar
+- Usamos integral en lugar de suma
+
+Es decir, cuando tenemos una densidad teórica continua, es necesario
+**integrar** en lugar de **sumar** para calcular su media.
+
+
+### Varianza y desviación estándar
+
+Otra cantidad importante es la varianza de una muestra. Es una medida de
+dispersión, y se calcula como
+
+$$
+\hat{\sigma}^2 = \frac{1}{n}\sum_{i=1}^n (x_i - \bar{x})^2
+$$
+
+Nótese que cuando los datos están altamente concentrados alrededor
+del valor de la media, la varianza es chica, y cuando hay más dispersión
+alrededor de la media, la varianza es grande.
+
+La **desviación estándar** es la raíz cuadrada de esta cantidad:
+
+$$
+\hat{\sigma} = \sqrt{\frac{1}{n}\sum_{i=1}^n (x_i - \bar{x})^2}
+$$
+que tiene la ventaja de que está en las mismas unidades que la variable
+original.
+
+
+Siguiendo el mismo patrón que arriba, tenemos que integrar en lugar
+de sumar, y ponderar por la densidad en lugar de la frecuencia:
+El equivalente en una distribución teórica es también una integral, y la
+varianza está definida por
+
+$$\sigma^2 = \int (x - \mu)^2 f(x) \,dx$$
+
+La desviación estándar $\sigma$ es la raíz cuadrada de esta cantidad.
+
+$$\sigma = \sqrt{\int (x - \mu)^2 f(x)\,dx}$$
+
+En resumen la densidad indica la frecuencia relativa de datos que esperamos observar
+alrededor de cada punto, y
+
+- Resúmenes de una distribución teórica (como cuantiles, media, varianza, etc.) se calculan integrando ponderado por la densidad.
+- Resúmenes de una distribución empírica se calculan sumando ponderando por la frecuencia relativa.
+
+### Notación {-}
+
+Para la media de una variable aleatoria $X$ con densidad $f$, 
+utilizamos la notación siguiente:
+
+$$\mu = \int x f(x)\,dx = E(X)$$
+
+y decimos también que $E(X)$ es el valor esperado de $X$. Igualmente, la
+varianza podemos escribirla como el valor esperado de la variable $(X-\mu)^2$:
+
+$$\sigma^2 = \int (x - \mu)^2 f(x)  = E\left ( (X-\mu)^2 \right)$$
+Aunque esto requiere de un teorema simple (el teorema del estadístico inconsciente)
+que establece que para cualquier función $h$, si $Y=h(X)$ y $f$ es la función de
+densidad de $X$, entonces
+$$E(Y) = E(h(X)) = \int h(x) f(x) \,dx$$
+
+
+### ¿Cuándo usar media y desviación estándar?
+
+Algunos modelos probabilísticos son más fáciles de tratar analíticamente usando
+media y varianza. En esos casos, conviene usar estas medidas. Esto es especialmente
+cierto cuando las distribuciones son simétricas y no tienen colas muy largas.
+
+En cuanto a datos observados, conviene usar media y varianza cuando pretendemos
+modelarlos con densidades como las del párrafo anterior. En este caso,
+la interpretación de estos valores se hace a través de la forma de la densidad. Es importante checar (por ejemplo usando gráficas de cuantiles) que esas densidades
+describen  apropiadamente a los datos.
+
+### Ejercicio {-}
+
+- Calcula media y desviación estándar para una densidad triangular (0,4) y otra (0,10)
+- Calcula media y desviación estándar para una densidad uniforme en (0,4) y otra uniforme en (0, 10)
+- Contrasta tus resultados. ¿Las medias ocurren en el lugar que esperabas? ¿Qué distribuciones presentan más dispersión de acuerdo a la desviacion estándar?
+
+## La distribución normal
+
+La distribución normal es una que aparece naturalmente en al teoría
+de probabilidad.
+
+### Promedio de variables
+
+Consideremos que tiramos 40 dados justos de 6 lados, y consideramos
+su promedio $\bar{X}$ como resultado de nuestro experimento aleatorio. 
+¿Cómo se ve la distribución de probabilidades de esta variable $\bar{X}$.
+
+Comenzamos haciendo simulacion:
+
+```{r}
+simular_bolsa <- function(num_dados = 40){
+    dados <- sample(1:6, num_dados, replace = TRUE)
+    media <- mean(dados)
+    media
+}
+simular_bolsa()
+```
+Veamos cómo se ven los resultados si hacemos este experimento un número
+grande de veces:
+
+```{r, fig.width = 4, fig.height=3}
+set.seed(23)
+sims_dados <- map_dbl(1:10000, ~ simular_bolsa())
+ggplot(tibble(resultado = sims_dados), 
+       aes(x = resultado)) +
+    geom_histogram(binwidth = 0.1)
+```
+
+Y notamos una forma de "campana" interesante. Esto se explica porque típicamente
+tendremos tiros bajos y altos, de modo que muchos resultados de este experimento
+se concentran alrededor de la media de un dado (3.5). Además, existen fluctuaciones
+aleatorios, y a veces tenemos un poco más de tiros altos o de tiros bajos, de forma
+que existe dispersión alrededor de 3.5.
+
+Sin embargo, estas desviaciones de 3.5 no pueden ser muy grandes: por ejemplo, para tener un promedio de 1, todas las tiradas de los 40 dados tendrían que dar 1, y eso es muy poco probable. Igualmente, para que el promedio fuera cercano a 6, la gran mayoría
+de los 40 dados deberían de dar 6, lo cual otra vez es muy poco probable. Esto explica al menos la forma general de la forma de las colas derecha e izquierda de esta distribución.
+
+Los dados podrían ser diferentes (por ejemplo, un poco cargados a 1 o 6, o más cargados
+a valores centrales), y los argumentos de arriba también se cumplirían. Lo 
+que **es sorprendente** es que, independientemente de cómo sean las particularidades
+de los dados, la forma analítica de esta distribución que acabamos de mostrar
+**es la misma**.
+
+Esta forma está descrita por la densidad normal estándar:
+
+$$f(x) = \frac{1}{\sqrt{2\pi}} e^{-\frac{x^2}{2}}$$
+A una variable $Z$ que tiene esta densidad le llamamos una variable
+con **distribución normal estándar**. Comparemos cuantiles en nuestro ejemplo:
+
+```{r}
+ggplot(tibble(resultado = sims_dados),
+       aes(sample = resultado)) +
+    geom_qq(distribution = stats::qnorm) +
+    xlab("Normal estándar teórica") +
+    ylab("Promedio de 40 dados")
+```
+Y notamos que los cuantiles no corresponden, pero el espaciamiento entre los cuantiles
+de los datos y los teóricos de la normal estándar es el mismo. Quiere decir que
+estas dos distribuciones **tienen la misma forma**, aunque estén escaladas y centradas en distintos valores.
+
+
+
+
+
+
