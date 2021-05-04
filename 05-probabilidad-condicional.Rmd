@@ -606,16 +606,16 @@ de que un registro tenga un error. Entonces calculamos
 
 Probabilidad de observar la muestra:
 
-$$P(x_1 = 0, x_2 = 1, x_3 = 0, x_4 = 0, x_5 =1, x_6 =0, x_7 =0, x_8 =0)$$
+$$P(X_1 = 0, X_2 = 1, X_3 = 0, X_4 = 0, X_5 =1, X_6 =0, X_7 =0, X_8 =0)$$
 
 es igual a
 
-$$P(x_1 = 0)P(x_2 = 1)P(x_3 = 0)P( x_4 = 0)P(x_5 =1)P(x_6 =0)P(x_7 =0)P(x_8 =0)$$
+$$P(X_1 = 0)P(X_2 = 1)P(X_3 = 0)P( X_4 = 0)P(X_5 =1)P(X_6 =0)P(X_7 =0)P(X_8 =0)$$
 pues la probabilidad de que cada observación sea 0 o 1 no depende de las observaciones restantes (la muestra se extrajo de manera independiente). 
 
 Esta ultima cantidad tiene un parámetro que no conocemos: la proporcion $p$ de registros
 con errores. Así que lo denotamos como una cantidad desconocida $p$. Nótese
-entonces que $P(x_2=1) = p$, $P(X_3=0) = 1-p$ y así sucesivamente, así que la cantidad
+entonces que $P(X_2=1) = p$, $P(X_3=0) = 1-p$ y así sucesivamente, así que la cantidad
 de arriba es igual a
 
 $$p(1-p)p(1-p)(1-p)p(1-p)(1-p)(1-p) $$
