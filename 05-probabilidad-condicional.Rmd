@@ -447,3 +447,305 @@ $$P(E_1 | A_2) = \frac{(1/2)(1/3)}{1/2} = 1/3$$
 Asi que si cambiamos, la probabilidad de ganar es de 2/3.
 
 Simula para verificar tus resultados.
+
+## Independencia
+
+Cuando tenemos dos eventos, y tenemos que $P(E|F) > P(E)$ o $P(F|E) > P(F)$ (checa
+que una implica la otra), decimos que los eventos tienen dependencia positiva: cuando
+sabemos que uno ocurre, la probabiidad del otro aumenta.
+
+En algunos casos $P(E|F) = P(E)$ y $P(F|E) = P(F)$, lo cual sucede cuando
+$P(EF)=P(F)P(E)$. En este caso decimos que los eventos $E$ y $F$ son *independientes*.
+Nótese que esto no quiere decir que no haya ninguna conexión entre $E$ y $F$ (puede
+ser que la ocurrencia de $F$ cambie las maneras en que puede ocurrir $E$), sólo
+que la probabilidad de uno no cambia al condicionar al otro.
+
+### Ejemplos {-}
+
+1. Muestra que si sabemos que sacar un corazón de una baraja de 52 cartas es
+independiente de sacar un as
+2. Muestra que en nuestro modelo equiprobable de dos volados, el resultado
+de un volado es independiente del resultado del otro.
+3. El evento "la suma de la tirada de dos dados" es independiente del resultado
+del primer dado.
+
+
+## Independencia de más de dos eventos
+
+Nótese que cuando los eventos $E$ y $F$ son indpendientes, por definición
+
+$$P(E \,y\, F) = P(E) P(F)$$
+
+Decimos que los eventos $E$, $F$ y $G$ son independientes cuando
+
+- $P(E \,y \,F \, y \, G) = P(E)P(F)P(G)$
+- $P(E \,y \,F ) = P(E)P(F)$
+- $P(E \,y \, G) = P(E)P(G)$
+- $P(F \, y \, G) = P(F)P(G)$
+
+y así sucesivamente para un número mayor de eventos: si los eventos son independientes, la probabilidad de que ocurran cualquier 
+subconjunto de ellos es es el producto de la probabilidades de que cada 
+uno de ellos ocurra.
+
+En general, si $E_1, E_2, \ldots, E_n$ son eventos independientes, entonces
+$$P(E_1\, y \, E_2 \, y \cdots \,y E_n) = P(E_1)P(E_2)\cdots P(E_n)$$
+
+
+
+
+
+
+
+### Ejercicio {-}
+
+Hacemos un número indefinido de pruebas independientes, y cada
+una de ellas puede resultar en éxito con probabilidad $p$ y fracaso con
+probabilidad $1-p$. Calcula la probabilidad de que 1) al menos un éxito
+suceda en la primeras 20 pruebas. 2) todas las pruebas sean éxito y 3)
+ exactamente 5 de las 2o pruebas sean éxito.
+ 
+### Ejemplo: número de seises {-}
+
+Construye un modelo para el número de seises en dos tiradas de dados. Escribimos
+$X$= número de seises que obtenemos en dos tiradas de dado.
+
+Los resultados posibles son 0, 1 y 2 seises. Para calcular la probablidad de
+tirar dos seises hacemos:
+
+$$P(X=2) = P(S_2\, y \, S_1) = P(S_2 | S_1) P(S_1).$$
+ahora, si suponemos que el primer tiro no afecta de ninguna manera el resultado
+del segundo tiro, entonces $P(S_2|S_1) = P(S_2)$, y la fórmula es
+
+$$P(X=2) = P(S_2\, y \, S_1) = P(S_2) P(S_1) = (1/6)(1/6) = 1/36.$$
+Usando el mismo argumento podemos calcular de la probabilidad de obtener ningún seis
+es
+
+$$P(X=0) = P(S_2^c \, y \, S_1^c ) = P(S_2^c)P(S_1^c) = (5/6)(5/6) = 25/36$$
+
+La probabilidad restante se puede calcularse directamente, o notar que
+como 0, 1 y 2 son los únicos posibles resultados, entonces
+
+$$P(X=1) = 1- P(X=0) - P(X=2) = 1 - 25/36 - 1/36 = 10/36$$
+
+Checa tus resultados usando simulación.
+
+**Observación**: en muchos casos, **la independencia se construye como un
+supuesto para construir modelos más complejos**, cuando este supuesto es adecuado.
+Un ejemplo es cuando tomamos muestras de una población: si tomamos cada muestra
+independientemente de las otras, analizar los resultados es mucho más fácil que
+cuando hay esquemas complejos de dependencias entre los datos que xtraemos.
+
+
+
+
+## Intro a estimación por máxima verosimilitud 
+
+Uno de los procedimientos más estándar para estimar cantidades desconocidas 
+es el **método 
+de máxima verosimilitud**. Los estimadores de máxima verosimilitud tienen propiedades
+convenientes, y dan en general resultados razonables siempre y cuando los supuestos
+sean razonables. 
+
+**Máxima verosimilitud es un proceso intuitivo, y consiste en aprender o estimar valores de parámetros desconocidos suponiendo para los datos su explicación más probable**. Para
+esto, usando supuestos y modelos requeriremos calcular la probabilidad de un conjunto
+de observaciones.
+
+### Ejemplo 1 {-}
+
+Supongamos que una máquina produce dos tipos de bolsas de 25 galletas: la mitad de las veces produce una bolsa con 5 galletas de avena y 20 de chispas de chocolate, y
+la otra mitad produce galletas con 23 galletas de avena y 2 de chispas de chocolate. 
+
+Tomamos una bolsa, y no sabemos qué tipo de bolsa es (parámetro desconocido). Extraemos al azar una de las galletas, y es de chispas de chocolate (observación).
+
+Por máxima verosimilitud, inferimos que la bolsa que estamos considerando tiene 5 galletas de avena. Esto es porque es más probable observar una galleta de chispas en las bolsas que contienen 5 galletas de avena que en las bolsas que contienen 23 galletas de avena. Podemos cuantificar la probabilidad que "acertemos" en nuestra inferencia.
+
+---
+
+Cómo se aprecia en el ejemplo anterior, el esquema general es:
+
+1. Existe un proceso del que podemos obtener observaciones de algún sistema
+o población real.
+2. Tenemos un **modelo probabilístico** que dice cómo se producen esas observaciones a partir del sistema o población real.
+3. Usualmente este modelo tiene algunas cantidades que no conocemos, que rigen el proceso y cómo se relaciona el proceso con las observaciones.
+
+Nuestro propósito es:
+
+4. Extraemos observaciones del proceso:  
+$$x_1, x_2, \ldots, x_n$$
+5. Queremos aprender de los parámetros desconocidos del proceso para calcular cantidades de interés acerca del sistema o población real
+
+
+En principio, los modelos que consideramos pueden ser complicados y tener varias partes o parámetros. Veamos primero un ejemplo clásico con un solo parámetro, y cómo lo resolveríamos
+usando máxima verosimilitud.
+
+**Nota**: Cuando decimos *muestra* en general nos referimos a observaciones
+independientes obtenidas del mismo proceso (ver la sección anterior para ver qué 
+significa que sea independientes). Este esquema es un supuesto
+que simplifica mucho los cálculos, como discutimos antes. Muchas veces este supuesto
+sale del diseño de la muestra o del estudio, pero en todo caso es importante considerar
+si es razonable o no para nuestro problema particular.
+
+
+### Ejemplo {-}
+
+Supongamos que queremos saber qué proporción de registros de una base de datos tiene algún error menor de captura. No podemos revisar todos los registros, así que tomamos una muestra
+de 8 registros, escogiendo uno por uno al azar de manera independiente. Revisamos los
+8 registros, y obtenemos los siguientes datos:
+
+$$x_1 = 0, x_2 = 1, x_3 = 0, x_4 = 0, x_5 =1, x_6 =0, x_7 =0, x_8 =0$$
+
+donde 1 indica un error menor. Encontramos dos errores menores. ¿Cómo estimamos el número de
+registros con errores leves en la base de datos?
+
+Ya sabemos una respuesta razonable para nuestro estimador puntual, que sería $\hat{p}=2/8=0.25$. 
+Veamos cómo se obtendría por máxima verosimilitud.
+
+Según el proceso con el que se construyó la muestra, debemos dar una probabilidad de observar
+los 2 errores en 8 registros. Supongamos que en realidad existe una proporción $p$
+de que un registro tenga un error. Entonces calculamos
+
+Probabilidad de observar la muestra:
+
+$$P(x_1 = 0, x_2 = 1, x_3 = 0, x_4 = 0, x_5 =1, x_6 =0, x_7 =0, x_8 =0)$$
+
+es igual a
+
+$$P(x_1 = 0)P(x_2 = 1)P(x_3 = 0)P( x_4 = 0)P(x_5 =1)P(x_6 =0)P(x_7 =0)P(x_8 =0)$$
+pues la probabilidad de que cada observación sea 0 o 1 no depende de las observaciones restantes (la muestra se extrajo de manera independiente). 
+
+Esta ultima cantidad tiene un parámetro que no conocemos: la proporcion $p$ de registros
+con errores. Así que lo denotamos como una cantidad desconocida $p$. Nótese
+entonces que $P(x_2=1) = p$, $P(X_3=0) = 1-p$ y así sucesivamente, así que la cantidad
+de arriba es igual a
+
+$$p(1-p)p(1-p)(1-p)p(1-p)(1-p)(1-p) $$
+
+que se simplifica a 
+
+$$ L(p) = p^2(1-p)^6$$
+
+Ahora la idea es **encontrar la p que maximiza la probabilidad de lo que observamos**. En
+este caso se puede hacer con cálculo, pero vamos a ver una gráfica de esta función y
+cómo resolverla de manera numérica.
+
+```{r, fig.width = 4, fig.height=3}
+verosimilitud <- function(p){
+  p^2 * (1-p)^6
+}
+dat_verosim <- tibble(x = seq(0,1, 0.001)) %>% mutate(prob = map_dbl(x, verosimilitud))
+ggplot(dat_verosim, aes(x = x, y = prob)) + geom_line() +
+  geom_vline(xintercept = 0.25, color = "red") +
+  xlab("p")
+```
+
+
+Nótese que esta gráfica:
+
+- Depende de los datos, que pensamos fijos.
+- Cuando cambiamos la $p$, la probabilidad de observar la muestra cambia. Nos interesa
+ver las regiones donde la probabilidad es relativamente alta.
+- El máximo está en 0.25.
+- Así que el estimador de máxima verosimilitud es $\hat{p} = 0.25$
+
+---
+
+Obsérvese que para hacer esto usamos:
+
+- Un modelo teórico de cómo es la población con parámetros y 
+- Información de como se extrajo la muestra,
+
+y resolvimos el problema de estimación convirtiéndolo en uno de optimización.
+
+Probamos esta idea con un proceso más complejo:
+
+### Ejemplo 2
+
+Supongamos que una máquina puede estar funcionando correctamente o no en cada
+corrida. Cada corrida se producen 500 productos, y se muestrean 10 para
+detectar defectos. Cuando la máquina funciona correctamente, la tasa de defectos
+es de 3%. Cuando la máquina no está funcionando correctamente la tasa de defectos
+es de 10%
+
+Supongamos que escogemos al azar 11 corridas, y obervamos los siguientes datos
+de número de defectuosos:
+
+$$1, 0, 0, 3 ,0, 0, 0, 2, 1, 0, 0$$
+
+La pregunta es: ¿qué porcentaje del tiempo la máquina está funcionando correctamente?
+
+Primero pensemos en una corrida. La probabilidad de observar una sucesión particular de 
+$r$ defectos es
+
+$$0.03^r(0.97)^{(10-r)}$$
+cuando la máquina está funcionando correctamente.
+
+Si la máquina está fallando, la misma probabilidad es 
+
+$$0.2^r(0.8)^{(10-r)}$$
+
+Ahora supongamos que la máquina trabaja
+correctamente en una proporción $p$ de las corridas. Entonces la probabilidad
+de observar $r$ fallas se calcula promediando (probabilidad
+total) sobre las probabilidades de que la máquina esté funcionando
+bien o no:
+
+$$0.03^r(0.97)^{(10-r)}p + 0.2^r(0.8)^{(10-r)}(1-p)$$
+Y esta es nuestra función de verosimilitud para una observación.
+
+Suponemos que las $r_1,r_2, \ldots, r_{11}$ observaciones son independientes
+(por ejemplo, después de cada corrida la máquina se prepara de una manera estándar,
+y es como si el proceso comenzara otra vez). Entonces tenemos que multiplicar
+estas probabilidades para cada observación $r_1$:
+
+
+```{r}
+calc_verosim <- function(r){
+  q_func <- 0.03^r*(0.97)^(10-r)
+  q_falla <- 0.2^r*(0.8)^(10-r)
+  function(p){
+    #nota: esta no es la mejor manera de calcularlo, hay 
+    # que usar logaritmos.
+    prod(p*q_func + (1-p)*q_falla)
+  }
+}
+verosim <- calc_verosim(c(1, 0, 0, 3, 0, 0, 0, 2, 1, 0, 0))
+verosim(0.1)
+```
+
+```{r, fig.width = 5, fig.height=4}
+dat_verosim <- tibble(x = seq(0,1, 0.001)) %>% mutate(prob = map_dbl(x, verosim))
+ggplot(dat_verosim, aes(x = x, y = prob)) + geom_line() +
+  geom_vline(xintercept = 0.8, color = "red") +
+  xlab("prop funcionado")
+```
+
+Y nuestra estimación puntual sería de alrededor de 80%.
+
+### Aspectos numéricos {-}
+
+Cuando calculamos la verosimilitud arriba, nótese que estamos multiplicando
+números que pueden ser muy chicos (por ejemplo $p^6$, etc). Esto puede producir
+desbordes numéricos fácilmente. Por ejemplo para un tamaño de muestra de 1000, podríamos
+tener que calcular
+
+```{r}
+p <- 0.1
+proba <- (p ^ 800)*(1-p)^200
+proba
+```
+
+En estos casos, es mejor hacer los cálculos en la escala logarítmica. El logaritmo
+convierte productos en sumas, y baja exponentes multiplicando. Si calculamos en escala
+logaritmica la cantidad de arriba, no tenemos problema:
+
+```{r}
+log_proba <- 800 * log(p) + 200 * log(1-p)
+log_proba
+```
+
+Ahora notemos que 
+
+- Maximizar la verosimilitud **es lo mismo** que maximizar la log-verosimilitud,  pues el logaritmo es una función creciente. Si $x_{max}$ es el máximo de $f$, tenemos que $f(x_{max})>f(x)$ para cualquier $x$, entonces tomando logaritmo,
+$$log(f(x_{max}))>log(f(x))$$ para cualquier $x$, pues el logaritmo respeta la desigualdad por ser creciente.
+- Usualmente usamos la log verosimilitud para encontrar estimador de máxima verosimilitud
+- Hay razónes teóricas y de interpretación por las que también es conveniente hacer esto.
