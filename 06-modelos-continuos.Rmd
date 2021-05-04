@@ -14,7 +14,7 @@ library(patchwork)
 library(kableExtra)
 ```
 
-En la parte anterior consideramos resultados numéricos de experimentos aleatorios,
+En la parte anterior consideramos un númeroo fijo de resultados numéricos de experimentos aleatorios,
 por ejemplo, cuando $X$ el resultado de una tirada de dado. En este caso, un modelo
 de probabilidad para $X$ asigna una probabilidad dada a cada posible resultado,
 por ejemplo
@@ -27,12 +27,10 @@ no está claro cómo asignaríamos probabilidades.
 
 Supongamos que giramos una ruleta con una flecha indicadora, y el resultado
 del experimento es el ángulo en grados final de la flecha. ¿Cómo podríamos poner,
-por ejemplo $P(X= 92)$? ¿Qué pasa si podemos medir con resultados
+por ejemplo $P(X= 92.7)$? ¿Qué pasa si podemos medir con resultados
 con varios decimales de exactitud?
 
-
-
-[Ruleta](figuras/ruleta.jpeg)
+![Ruleta](figuras/ruleta.jpeg)
 
 En estos casos, en lugar de considerar eventos de la forma $X=a$, podemos
 considerar eventos resultantes de la forma $a\leq X \leq b$, es decir,
@@ -47,12 +45,14 @@ $$P(Y < 180).$$
 
 ## Modelo equiprobable o uniforme
 
-El modelos más simple para una medición continua $X$ es el modelo uniforme. Para 
+Los modelos más simple para una medición continua $X$ son los modelos uniforme. 
+
+Para 
 nuestra ruleta, por ejemplo, $X$ puede tomar valores en el intervalo $[0, 360)$.
 Si la ruleta es justa, entonces la probabilidad de que
 la flecha caiga en cualquier sector $[a,b]$ debe ser igual. Una manera
-de lograr esto ues sar como probabilidad la proporción de 
-longitud $[a,b]$ con respecto al total de $[0, 360)$:
+de lograr esto usar como probabilidad la proporción de la 
+longitud de $[a,b]$ con respecto al total de $[0, 360)$:
 
 $P(X\in [a,b]) = \frac{b-a}{360}.$
 
@@ -78,7 +78,7 @@ Ahora supongamos que nuestra ruleta no está del todo balanceada. Por ejemplo,
 podría ser estuviera colgada en una pared, y al girar la flecha es un poco
 más probable que la flecha apunte hacia el piso en lugar de hacia el cielo. 
 
-En este caso, si la dirección hacia arriba en 90 grados y hacia abajo es
+En este caso, si la dirección hacia arriba es 90 grados y hacia abajo es
 270 grados, quisiéramos por ejemplo que
 $$P(260 < X <280) < P(80 < X < 100)$$
 Y nótese que debe ser posible asignar probabilidades a cualquier sector
@@ -92,8 +92,14 @@ $$P(X\in [a,b]) = \int_a^b \frac{1}{360} \,dx = \frac{b-a}{360}$$
 De forma que si $f(x)= 1/360$ para valores $0 \leq x < 360$, nuestra probabilidad
 se escribe como la integral
 
+
 $$P(X\in [a,b]) = \int_a^b f(x) \,dx $$
-Ahora la idea es la siguiente:
+
+- En este caso, probabilidad es área bajo la curva $f(x)=1/360$ que se calcula
+integrando sobre el intervalo de interés
+
+Para generalizar la idea es la siguiente:
+
 
 - Usamos la fórmula anterior, pero modificamos o perturbamos
 la función $f(x) = 1/360$ para que
@@ -133,6 +139,7 @@ ggplot(graf_tbl, aes(x = angulo, y = f, colour = tipo)) +
     geom_area(aes(x = ifelse(angulo > 50 & angulo < 130, angulo, 0)), 
               fill="salmon", alpha = 0.5)
 ```
+
 Y ahora vemos que para la versión perturbada, más de la probabilidad se
 concentra alrededor de 270 grados que alrededor de 90. Por las propiedades
 de la integral, todas las propiedades usuales de probabilidad se cumplen.
@@ -234,7 +241,7 @@ Sabemos que $x(0.25)< 2$, pues la integral hasta 2 es 0.5, así que
 
 $$\int_0^{x(0.25)} f(x)\,dx = \int_0^{x(0.25)} x/4 \,dx = \left [ x^2/8\right]_0^{x(0.25)} = (x(0.25))^2/8$$
 Si queremos que este valor sea igual a 0.25, entonces despejando obtenemos
-$$x(0.25) = \sqrt{0.25(8)} = \sqrt{2}\approx = 1.4142$$
+$$x(0.25) = \sqrt{0.25(8)} = \sqrt{2}\approx 1.4142$$
 Ahora podríamos calcular la otra integral, pero por simetría podemos concluir 
 que
 $$x(0.75) = 2 + (2 - 1.4142) \approx 2.5858$$
@@ -431,7 +438,7 @@ approx_tbl %>% summarise(suma_densidad = 1 / sum(densidad))
 que es el ancho del intervalo de las particiones. Recordamos por cálculo
 que esta es una la aproximación a la siguiente integral:
 
-$$\sum_i x_i f(x_i) \Delta \approx  \int xf(x)$$
+$$\sum_i x_i f(x_i) \Delta \approx  \int xf(x)\,dx$$
 
 De modo que para pasar de media de los datos $\bar{x}$ a la media
 de $\mu_f$ de una distribución la equivalencia es:
@@ -530,7 +537,7 @@ de probabilidad.
 
 Consideremos que tiramos 40 dados justos de 6 lados, y consideramos
 su promedio $\bar{X}$ como resultado de nuestro experimento aleatorio. 
-¿Cómo se ve la distribución de probabilidades de esta variable $\bar{X}$.
+¿Cómo se ve la distribución de probabilidades de esta variable $\bar{X}$?
 
 Comenzamos haciendo simulacion:
 
@@ -571,10 +578,19 @@ de los dados, la forma analítica de esta distribución que acabamos de mostrar
 Esta forma está descrita por la densidad normal estándar:
 
 $$f(x) = \frac{1}{\sqrt{2\pi}} e^{-\frac{x^2}{2}}$$
+
+cuya gráfica presentamos a continuación:
+
+```{r, fig.width=4, fig.height=3}
+tibble(x = seq(-3.5, 3.5, 0.01)) %>% 
+    mutate(f = (1/sqrt(2*pi)) * exp(-x^2 / 2)) %>% 
+ggplot(aes(x = x, y = f)) + geom_line()
+```
+
 A una variable $Z$ que tiene esta densidad le llamamos una variable
 con **distribución normal estándar**. Comparemos cuantiles en nuestro ejemplo:
 
-```{r}
+```{r, fig.width=4, fig.height=3}
 ggplot(tibble(resultado = sims_dados),
        aes(sample = resultado)) +
     geom_qq(distribution = stats::qnorm) +
@@ -597,7 +613,7 @@ ggplot(tibble(resultado = sims_tri),
     geom_histogram(binwidth = 0.01)
 ```
 
-```{r}
+```{r, fig.width=4, fig.height=3}
 ggplot(tibble(resultado = sims_tri),
        aes(sample = resultado)) +
     geom_qq(distribution = stats::qnorm) +
@@ -654,15 +670,29 @@ es una variable **normal** con parámetros $(\mu, \sigma)$, o de manera
 más compacta, decimos que $X$ es $N(\mu, \sigma)$. La distribución normal
 estándar es $N(0,1)$.
 
-Por ejemplo, si escogemos $\mu=15$ y $\sigma = 2.5$, obtenemos:
+Por ejemplo, si escogemos $\mu=5$ y $\sigma = 0.5$, obtenemos:
 
 ```{r, fig.width=4, fig.height=3}
-normal_std_graf <- tibble(x = seq(5, 25, 0.01)) %>% 
-    mutate(f = dnorm(x, 15, 2.5))
-ggplot(normal_std_graf, aes(x = x, y = f)) +
+normal_graf <- tibble(x = seq(3, 7, 0.01)) %>% 
+    mutate(f = dnorm(x, 5, 0.5))
+ggplot(normal_graf, aes(x = x, y = f)) +
     geom_line()
 ```
-Se puede demostrar fácilmente que:
+
+Podemos mostrar juntas estas dos distribuciones:
+
+```{r}
+densidad_normal <- tibble(x = seq(3, 7, 0.1)) %>% 
+  mutate(densidad = dnorm(x, 5, 0.5))
+densidad_normal_estandar <- tibble(x = seq(-3, 3, 0.1)) %>% 
+  mutate(densidad = dnorm(x))
+g_2 <- ggplot(densidad_normal_estandar, aes(x = x, y = densidad)) + geom_line()
+g_3 <- g_2 + xlim(c(-3, 7)) + ylim(c(0, 1))
+g_1 <- ggplot(densidad_normal, aes(x = x, y = densidad)) + geom_line() + xlim(c(-3, 7)) + ylim(c(0, 1))
+g_3 + g_1
+```
+
+Se puede demostrar que:
 
 ```{block2, type="comentario"}
 **Distribución normal**
@@ -671,4 +701,100 @@ Se puede demostrar fácilmente que:
 - La distribución normal $N(\mu,\sigma)$ tiene media $\mu$ y desviación estándar $\sigma$
 
 ```
+
+## Cuantiles y concentración de la densidad normal
+
+Con un poco de cálculo podemos ver qué tan fuertemente se concentra
+la densidad alrededor de la media para una distribución normal. La regla
+es la siguiente:
+
+- 68% de la densidad se concentra en el intervalo $[\mu-\sigma, \mu+\sigma]$
+- 95% de la densidad se concentra en el intervalo $[\mu-2\sigma, \mu+2\sigma]$
+- 99.7% de la densidad se concentra en el intervalo  $[\mu-3\sigma, \mu+3\sigma]$
+
+```{r, fig.width = 8, fig.height = 3, message=FALSE}
+grafica_concentracion <- function(mu, sigma, z){
+  x <- seq(mu - 3.1 * sigma, mu + 3.1 * sigma, 0.01)
+  valor <- dnorm(x, mu, sigma)
+  datos <- tibble(x = x, `f(x)`=valor)
+  texto <- round(100*(pnorm(z) - pnorm(-z)), 1)
+  texto <- paste0(texto, "%")
+  ggplot(datos, aes(x = x, y = `f(x)`)) +
+    geom_area(data = filter(datos, x < mu + z*sigma, x > mu - z*sigma), 
+      fill = "salmon") +
+        geom_line() +
+    annotate("text", x = mu, y = 0.1, label = texto) +
+    scale_x_continuous(breaks = mu + sigma*seq(-3, 3, 1)) +
+    theme_minimal() + ylab("") 
+}
+g_68 <- grafica_concentracion(10, 2, 1)
+g_95 <- grafica_concentracion(10, 2, 2)
+g_997 <- grafica_concentracion(10, 2, 3)
+paneles <- g_68 + g_95 + g_997
+paneles + plot_annotation(title = "Concentración alrededor de la media (normal)")
+```
+
+**Nota**: esto aplica para cualquier densidad normal, independientemente de los
+parámetros.
+
+Obsérvese que esto nos da una interpretación natural de la desviación estándar de una
+distribución normal en términos de percentiles de los datos, y la manera usual con la que entendemos
+la desviación estándar de la distribución normal.
+
+## El teorema central del límite
+
+Una de las razones por las que el modelo normal es tan importante es
+el siguiente resultado:
+
+```{block2, type="comentario"}
+**Teorema central del límite**
+
+Si $X_1,X_2,\ldots, X_n$ son variables aleatorias independientes
+con media $\mu$ y desviación estándar $\sigma$ con una densidad $f(x)$:
+    
+ - $S_n = X_1 + X_2 + \cdots X_n$ es aproximadamente normal cuando $n$ es suficientemente grande
+```
+
+- Muchas cantidades de interés en la estadística se pueden definir como
+sumas o promedios de un número grande de variables aleatorias
+(por ejempo, cuando queremos estimar el total de ingreso de los hogares,
+estatura promedio en una población, etc.) Los percentiles de una muestra grande
+también cumplen un teorema central del límite de este tipo.
+- La aproximación del teorema central del límite mejora cuando $n$ es más grande.
+Aunque una regla de dedo dice que $n\geq 30$ es suficiente para muchas distribuciones,
+puede ser que sea necesaria usar una $n$ más grande.
+
+Esto nos permite, por ejemplo, considerar nuestro primera técnica de
+estimación por intervalos:
+
+- Observamos una muestra grande $x_1,\ldots, x_n$ de datos de una población (no necesariamente con distribución normal). Supongamos que buscamos estimar
+la media $\mu$ de la población con un intervalo.
+- Estimamos la media con 
+$$\bar{x} = \frac{1}{n}(x_1+\cdots + x_n) = \frac{1}{n}\sum_i x_i,$$
+
+- Por el teorema del límite central, \bar{x} es aproximadamente normal, y su
+media es $\mu$. Esto implica que
+
+$$P(\mu + 2\sigma  \leq \bar{x} \leq\mu + 2\sigma)\approx 0.95$$
+Despejando $\mu$ obtenemos
+$$P(\bar{x} + 2\sigma  \leq \mu  \leq\bar{x} + 2\sigma)\approx 0.95$$
+Finalmente, no conocemos $\sigma$, pero la estimamos con
+
+$$\hat{\sigma}^2 = \frac{1}{n}((x_1 - \bar{x})^2 + \dots + (x_n - \bar{x})^2) = \frac{1}{n}\sum_i(x_i - \bar{x})^2$$
+
+Y aproximamos sustituyendo nuestra estimación:
+
+$$P(\bar{x} + 2\hat{\sigma } \leq \mu  \leq\bar{x} + 2\hat{\sigma})\approx 0.95$$
+Esto nos da un intervalo (llamado el **intervalo de Wald**) con 95% de confianza
+para la media poblacional:
+
+$$[\bar{x} + 2\hat{\sigma }  , \bar{x} + 2\hat{\sigma}]$$
+Notas: 
+
+- Por otras razones técnicas, a veces se usa $s^2 = \frac{1}{n-1}\sum_i (x_i-\bar{x})^2$ en lugar de $\hat{\sigma}^2$. Si la muestra es grande esto no es importante.
+- Estos intervalos tienen cobertura *nominal* de 95%, sin embargo, puede variar
+dependiendo del tamaño de muestra y la forma de la distribución teórica (poblacional). Existen métodos como el *bootstrap* donde podemos checar qué tan razonable es hacer
+esta aproximación. También se puede hacer simulación modelando la distribución $f(x)$.
+
+
 
