@@ -585,8 +585,90 @@ Y notamos que los cuantiles no corresponden, pero el espaciamiento entre los cua
 de los datos y los teóricos de la normal estándar es el mismo. Quiere decir que
 estas dos distribuciones **tienen la misma forma**, aunque estén escaladas y centradas en distintos valores.
 
+Probemos con promedios de 20 observaciones triangulares en $(0,1)$ por ejemplo.
+El resultado es el mismo:
 
 
+```{r, fig.width = 4, fig.height=3}
+set.seed(23)
+sims_tri <- map_dbl(1:10000, ~ mean(rtri(20, 0 ,1)))
+ggplot(tibble(resultado = sims_tri), 
+       aes(x = resultado)) +
+    geom_histogram(binwidth = 0.01)
+```
 
+```{r}
+ggplot(tibble(resultado = sims_tri),
+       aes(sample = resultado)) +
+    geom_qq(distribution = stats::qnorm) +
+    xlab("Normal estándar teórica") +
+    ylab("Promedio de 20 triangulares (0,1)")
+```
+Otra vez, la forma general es la misma, aún cuando los datos están centrados
+y escalados de manera distinta.
 
+## La densidad normal estándar
+
+Como expicamos, la densidad normal estándar está dada por
+
+$$f(x) = \frac{1}{\sqrt{2\pi}} e^{-\frac{x^2}{2}},$$
+
+cuya gráfica es como sigue:
+
+```{r, fig.width=4, fig.height=3}
+normal_std_graf <- tibble(x = seq(-3.5, 3.5, 0.01)) %>% 
+    mutate(f = dnorm(x, 0, 1))
+ggplot(normal_std_graf, aes(x = x, y = f)) +
+    geom_line()
+```
+Las probabilidades asociadas a una normal estándar se calculan integrando
+esta curva (que tiene que hacerse de forma numérica). Por ejemplo,
+para calcular
+
+$$P(Z < 1.5),$$
+podemos usar
+
+```{r}
+pnorm(1.5)
+```
+Que es el área bajo la curva mostrada abajo:
+
+```{r, fig.width=5, fig.height=4}
+normal_std_graf <- tibble(x = seq(-3.5, 3.5, 0.005)) %>% 
+    mutate(f = dnorm(x, 0, 1))
+ggplot(normal_std_graf, aes(x = x, y = f)) +
+    geom_line() +
+    geom_area(aes(x = ifelse(x > -3.5 & x < 1.5, x, 0)), 
+              fill="salmon", alpha = 0.5) +
+    ylim(c(0,0.4)) +
+    scale_x_continuous(breaks = seq(-3.5, 3.5, 0.5))
+```
+
+Esta es la forma de la densidad estándar. Podemos centrar esta
+campana en otro valor $\mu$ y aumentar la dispersión por un factor $\sigma$. Si
+$Z$ es una variable normal estándar, la variable
+
+$$X = \mu + \sigma Z$$
+
+es una variable **normal** con parámetros $(\mu, \sigma)$, o de manera
+más compacta, decimos que $X$ es $N(\mu, \sigma)$. La distribución normal
+estándar es $N(0,1)$.
+
+Por ejemplo, si escogemos $\mu=15$ y $\sigma = 2.5$, obtenemos:
+
+```{r, fig.width=4, fig.height=3}
+normal_std_graf <- tibble(x = seq(5, 25, 0.01)) %>% 
+    mutate(f = dnorm(x, 15, 2.5))
+ggplot(normal_std_graf, aes(x = x, y = f)) +
+    geom_line()
+```
+Se puede demostrar fácilmente que:
+
+```{block2, type="comentario"}
+**Distribución normal**
+
+- La distribución normal estándar $N(0,1)$ tiene media 0 y desviación estándar 1
+- La distribución normal $N(\mu,\sigma)$ tiene media $\mu$ y desviación estándar $\sigma$
+
+```
 
