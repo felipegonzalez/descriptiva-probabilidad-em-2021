@@ -345,10 +345,11 @@ $f(\frac{a+b}{2})$ por ejemplo).
 Si tenemos $n$ observaciones, esperamos entonces que caigan $nP(X\in I)$ en 
 el intervalo $I$, de forma que si $n([a,b])$ es el número de observaciones que caen en
 $I = [a,b]$, esperamos
-$$n([a,b]) \approx f(a)(b-a),$$
+$$\frac{n([a,b])}{n} \approx f(a)(b-a),$$
 y despejando obtenemos
-$$f(a)\approx \frac{n([a, b])}{b-a}.$$
-Esto implica que para aproximar la densidad, es necesario dividir los conteos
+$$f(a)\approx \frac{n([a, b])}{n(b-a)}.$$
+Esto implica que para aproximar la densidad, es necesario dividir las
+frecuencias relativas
 entre el ancho de los intervalos correspondientes, y de ahí la escala vertical de
 las gráficas de arriba.
 
