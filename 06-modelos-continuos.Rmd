@@ -797,5 +797,101 @@ Notas:
 dependiendo del tamaño de muestra y la forma de la distribución teórica (poblacional). Existen métodos como el *bootstrap* donde podemos checar qué tan razonable es hacer
 esta aproximación. También se puede hacer simulación modelando la distribución $f(x)$.
 
+## Otras densidades comunes
 
+Como vimos arriba, consideraciones teóricas hacen razonable suponer
+que una variable aleatoria tiene cierta distribución: por ejemplo,
+si una variable aleatoria es suma de muchas perturbaciones independientes,
+la suma o promedio resultante puede modelarse como una 
+distribución normal.
 
+Otras consideraciones teóricas sugieren otro tipo formas
+útiles de densidades. Un primer ejemplo es la distribución exponencial.
+
+### Variables aleatorias exponenciales
+
+Supongamos que estamos modelando tiempos a la ocurrencia $X$ de un
+evento (por ejemplo en análisis de supervivencia en estudios clínicos). 
+Esta es una variable que toma valores en los números positivos. ¿Cómo podría ser su forma?
+
+Consideremos por ejemplo que el tiempo de espera *no tienen memoria*. Es decir: si hay esperamos un periodo de $t$ días por ejemplo, la distribución del tiempo restante que tenemos que esperar no depende de $s$. En términos de probabilidad, podríamos escribir:
+$$P(X > s + t | X > t) = P(X > s)$$
+Esto se lee: dado que el evento ocurre en más de $t$ días, la probabilidad de que tarde al menos otros $s$ días no dependen de $t$. A la función $S(t) = P(X>t)$ muchas veces se le llama la **función de supervivencia**.
+
+Este es un modelo base útil, que después puede extenderse a procesos donde los eventos ocurren aceleradamente (envejecen), o donde los eventos dan evidencia de robustez (los que han sobrevivido hasta cierto tiempo se espera que duren más que lo que inicialmente), o quizá una combinación de
+los dos dependiendo de el valor de $t$.
+
+Con el supuesto de falta de memoria, la ecuación de arriba se cumple, y entonces (¿por qué?):
+$$P(X > s + t) = P(X > s) P(X > t),$$
+así que
+$$\frac{1}{s}(P(X > s+ t) - P(X>t)) = \frac{1}{s}(P(X>s) - 1)P(X>t).$$
+Que podemos reescribir usando la densidad $f(x)$ como
+$$\frac{1}{s}\int_t^{t+s} f(x)\,dx = P(X>t)\frac{1}{s}\int_0^s f(x)\,dx$$
+Conforme $s$ se hace más chica, el lado izquierdo converge a $f(t)$. El lado derecho, por otra parte, converge a $f(0)$, y obtenemos
+$$f(t) = f(0)\int_t^\infty f(x)\,dx,$$
+y ahora derivamos de ambos lados para obtener
+$$f'(t) = -f(0)f(t)$$
+La única función que satisface esta propiedad (su derivada es proporcional a ella misma) es
+$$f(t) = \lambda e^{-\lambda t}$$
+Puedes checar que efectivamente esta densidad cumple que la ecuación anterior. A esta densidad le llamamos la **densidad exponencial con tasa** $\lambda$.
+
+```{r}
+lambda <- 1
+sim_exp <- rexp(1000, rate = lambda)
+ggplot(tibble(x = sim_exp), aes(x = x)) +
+    geom_histogram(boundary = 0)
+```
+
+Ejercicio: demuestra que una variable aleatoria exponencial con tasa $\lambda$ tiene media $E(X) = 1/\lambda$ y $Var(X) = 1 / \lambda^2
+
+El parámetro $\lambda$ se llama tasa por la interpretación de tiempo de espera que mostramos arriba. Supongamos que $\lambda = 10$. Eso quiere decir que esperamos observar el evento en $1/\lambda = 1/10$ minutos, por ejemplo, o lo que es lo mismo, a una tasa de $\lambda = 10$ eventos por minuto.
+
+Nótese finalmente que todas las variables exponenciales son escalamientos de una variable exponencial con $\lambda = 1$. Esto es porque si $Y=kX$, y $X$ es exponencial con $\lambda= 1$ entonces:
+
+$$P(Y>t)=P(kX > t) = P(X > t/k) = \int_{t/k}^\infty e^{-x}\,dx = e^{-t/k}$$ 
+De modo que derivando, encontramos que la densidad de $Y$ es $\frac{1}{k} e^{-t/k}$, que es una exponencial con tasa $\lambda = 1/k$
+
+### Ejemplo: exponencial
+
+Supongamos que un tipo de focos tienen tiempos de vida exponencial
+con una vida media de 10 años. ¿Cuál es la probabilidad de que
+un foco dure más de 15 años? Si tenemos un foco que ya vivió 10 años,
+cuál es la probabilidad de que dure otros 15 años.
+
+Tenemos que la vida de un foco es una variable $X$ exponencial
+con parámetro $\lambda = 1/10$. La probabilidad de que dure más 
+de 15 años es entonces
+$$P(X>15) = \int_{15}^\infty \frac{1}{10} e^{x/10}\,dx$$
+
+Podemos calcular a mano, o usar rutinas usuales de R:
+
+```{r}
+pexp(15, rate = 1/10, lower.tail = FALSE)
+```
+### Variables aleatorias gamma
+
+Esta es otra familia que extiende la familia de distribuciones
+exponenciales. La forma analítica de una densidad gamma
+con parámetro de forma $k>0$ y tasa $\lambda$
+
+$$f(x) = C x^{k-1} e^{-\lambda x}$$
+donde la constante $C$ de normalización depende de $k$ y $\lambda$.
+
+Abajo vemos datos simulados de densidades Gamma con distintas combinaciones de parámetros:
+
+```{r}
+params_tbl <- crossing(k = c(1, 2, 5, 10), lambda = c(1/4, 1/2))
+sims_tbl <- params_tbl %>% 
+    mutate(sims = map2(k, lambda, 
+                       ~ rgamma(10000, shape = .x, rate = .y))) %>% 
+    unnest(cols = sims)
+```
+
+```{r}
+ggplot(sims_tbl, aes(x = sims)) + 
+    geom_histogram(boundary = 0, bins = 50) +
+    facet_grid(k~lambda)
+```
+Nótese que cada columna es un rescalamiento de la otra, pero
+las densidades de los renglones tienen distinta forma. Puedes
+ver [aquí](https://en.wikipedia.org/wiki/Gamma_distribution) parámetros como esperanza, varianza de esta estas distribuciones, junto con otras propiedades y aplicaciones.
