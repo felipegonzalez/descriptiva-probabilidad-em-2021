@@ -260,7 +260,7 @@ datos_tbl <- tibble(x = runif(1000, 4, 15)) %>%
    mutate(media = ifelse(z=="f", 70 + 6.5 * x, 80 + 4.5 * x)) %>% 
    mutate(desv_est = 4 * sqrt(x)) %>% 
    mutate(estatura = rnorm(n(), media, desv_est))
-datos_tbl %>% head(50) %>% kable()
+datos_tbl %>% head(20) %>% kable()
 ```
 
 Y hacemos algunas gráficas descriptivas:
