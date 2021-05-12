@@ -776,20 +776,20 @@ $$\bar{x} = \frac{1}{n}(x_1+\cdots + x_n) = \frac{1}{n}\sum_i x_i,$$
 - Por el teorema del límite central, \bar{x} es aproximadamente normal, y su
 media es $\mu$. Esto implica que
 
-$$P(\mu + 2\sigma  \leq \bar{x} \leq\mu + 2\sigma)\approx 0.95$$
+$$P(\mu - 2\sigma  \leq \bar{x} \leq\mu + 2\sigma)\approx 0.95$$
 Despejando $\mu$ obtenemos
-$$P(\bar{x} + 2\sigma  \leq \mu  \leq\bar{x} + 2\sigma)\approx 0.95$$
+$$P(\bar{x} - 2\sigma  \leq \mu  \leq\bar{x} + 2\sigma)\approx 0.95$$
 Finalmente, no conocemos $\sigma$, pero la estimamos con
 
 $$\hat{\sigma}^2 = \frac{1}{n}((x_1 - \bar{x})^2 + \dots + (x_n - \bar{x})^2) = \frac{1}{n}\sum_i(x_i - \bar{x})^2$$
 
 Y aproximamos sustituyendo nuestra estimación:
 
-$$P(\bar{x} + 2\hat{\sigma } \leq \mu  \leq\bar{x} + 2\hat{\sigma})\approx 0.95$$
+$$P(\bar{x} - 2\hat{\sigma } \leq \mu  \leq\bar{x} + 2\hat{\sigma})\approx 0.95$$
 Esto nos da un intervalo (llamado el **intervalo de Wald**) con 95% de confianza
 para la media poblacional:
 
-$$[\bar{x} + 2\hat{\sigma }  , \bar{x} + 2\hat{\sigma}]$$
+$$[\bar{x} - 2\hat{\sigma }  , \bar{x} + 2\hat{\sigma}]$$
 Notas: 
 
 - Por otras razones técnicas, a veces se usa $s^2 = \frac{1}{n-1}\sum_i (x_i-\bar{x})^2$ en lugar de $\hat{\sigma}^2$. Si la muestra es grande esto no es importante.
@@ -850,18 +850,7 @@ Nótese finalmente que todas las variables exponenciales son escalamientos de un
 
 $$P(Y>t)=P(kX > t) = P(X > t/k) = \int_{t/k}^\infty e^{-x}\,dx = e^{-t/k}$$ 
 De modo que derivando, encontramos que la densidad de $Y$ es $\frac{1}{k} e^{-t/k}$, que es una exponencial con tasa $\lambda = 1/k$
-
-### Ejemplo: exponencial
-
-Supongamos que un tipo de focos tienen tiempos de vida exponencial
-con una vida media de 10 años. ¿Cuál es la probabilidad de que
-un foco dure más de 15 años? Si tenemos un foco que ya vivió 10 años,
-cuál es la probabilidad de que dure otros 15 años.
-
-Tenemos que la vida de un foco es una variable $X$ exponencial
-con parámetro $\lambda = 1/10$. La probabilidad de que dure más 
-de 15 años es entonces
-$$P(X>15) = \int_{15}^\infty \frac{1}{10} e^{x/10}\,dx$$
+-x/10}\,dx$$
 
 Podemos calcular a mano, o usar rutinas usuales de R:
 
