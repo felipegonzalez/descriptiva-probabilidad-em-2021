@@ -849,14 +849,26 @@ El parámetro $\lambda$ se llama tasa por la interpretación de tiempo de espera
 Nótese finalmente que todas las variables exponenciales son escalamientos de una variable exponencial con $\lambda = 1$. Esto es porque si $Y=kX$, y $X$ es exponencial con $\lambda= 1$ entonces:
 
 $$P(Y>t)=P(kX > t) = P(X > t/k) = \int_{t/k}^\infty e^{-x}\,dx = e^{-t/k}$$ 
-De modo que derivando, encontramos que la densidad de $Y$ es $\frac{1}{k} e^{-t/k}$, que es una exponencial con tasa $\lambda = 1/k$
--x/10}\,dx$$
+De modo que derivando, encontramos que la densidad de $Y$ es $\frac{1}{k} e^{-t/k}$, que es una exponencial con tasa $\lambda = 1/k$.
+
+### Ejemplo: exponencial
+
+Supongamos que un tipo de focos tienen tiempos de vida exponencial
+con una vida media de 10 años. ¿Cuál es la probabilidad de que
+un foco dure más de 15 años? Si tenemos un foco que ya vivió 10 años,
+cuál es la probabilidad de que dure otros 15 años.
+
+Tenemos que la vida de un foco es una variable $X$ exponencial
+con parámetro $\lambda = 1/10$. La probabilidad de que dure más 
+de 15 años es entonces
+$$P(X>15) = \int_{15}^\infty \frac{1}{10} e^{x/10}\,dx$$
 
 Podemos calcular a mano, o usar rutinas usuales de R:
 
 ```{r}
 pexp(15, rate = 1/10, lower.tail = FALSE)
 ```
+
 ### Variables aleatorias gamma
 
 Esta es otra familia que extiende la familia de distribuciones
